@@ -1,6 +1,6 @@
 # Ohjelmistotekniikan harjoitustyö, kevät 2023
 
-**This space empty for now**, nothing to see here! *Check back later.*
+**Note:** This space empty for now, nothing to see here! *Check back later.*
 
 ## Viikkoharjoitukset
 ### Viikko 1
