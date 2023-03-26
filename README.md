@@ -1,6 +1,7 @@
 # Ohjelmistotekniikan harjoitustyö, kevät 2023
 
-**Note:** This space empty for now, nothing to see here! *Check back later.*
+- [Määrittelydokumentti](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaarittely.md)
+- [Työaikakirjanpito](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md)
 
 ## Viikkoharjoitukset
 ### Viikko 1
