@@ -1,6 +1,8 @@
 # Työaikakirjanpito
 <hr/>
+
 | Päivä | Aika | Mitä tein |
-| :---: | :--- | :-------- |
-| 21.3  | 3    | Aiheen suunnittelu |
-| 26.3  | 2    | Määrittelydokumentti |
+|-------|------|-----------|
+| 21.3  |  3h  | Aiheen suunnittelu          |
+| 26.3  |  2h  | Määrittelydokumentti          |
+|       |      |           |
