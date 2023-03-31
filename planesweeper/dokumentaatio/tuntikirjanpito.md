@@ -3,6 +3,8 @@
 
 | Päivä | Aika | Mitä tein |
 |-------|------|-----------|
-| 21.3  |  3h  | Aiheen suunnittelu          |
-| 26.3  |  2h  | Määrittelydokumentti          |
-|       |      |           |
+| 21.3  |  3h  | Aiheen suunnittelu |
+| 26.3  |  2h  | Määrittelydokumentti |
+| 30.3. |  10h | Perusrungon toteutus |
+| 31.3. |  4h | Perusrungon toteutus |
+| Yhteensä | 19h |           |

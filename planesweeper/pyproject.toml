@@ -6,7 +6,8 @@ authors = ["Kalle Saunamäki <kalle.saunamaki@helsinki.fi>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
+pygame = "^2.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
