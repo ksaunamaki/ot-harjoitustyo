@@ -1,4 +1,4 @@
 class GameInitialization:
-    def __init__(self, level: int, singleGame: bool = True):
+    def __init__(self, level: int, single_game: bool = True):
         self.level = level
-        self.singleGame = singleGame
+        self.single_game = single_game

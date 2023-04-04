@@ -1,6 +1,7 @@
 import unittest
-from entities.board_piece import BoardPiece,BoardPieceType
+from entities.board_piece import BoardPiece, BoardPieceType
 from entities.board import Gameboard
+
 
 class TestGameboard(unittest.TestCase):
     def setUp(self):
@@ -15,9 +16,9 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])
 
     def test_create_level2_board_with_random_planes(self):
@@ -29,9 +30,9 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])
 
     def test_create_level3_board_with_random_planes(self):
@@ -43,9 +44,9 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])
 
     def test_create_level4_board_with_random_planes(self):
@@ -57,9 +58,9 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])
 
     def test_create_level5_board_with_random_planes(self):
@@ -71,9 +72,9 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])
 
     def test_create_level6_board_with_random_planes(self):
@@ -85,7 +86,7 @@ class TestGameboard(unittest.TestCase):
 
         for piece in board._pieces:
             self.assertNotEqual(piece, None)
-            if piece._type == BoardPieceType.Plane:
+            if piece._type == BoardPieceType.PLANE:
                 planes += 1
-        
+
         self.assertEqual(planes, Gameboard.LEVELS[level][1])

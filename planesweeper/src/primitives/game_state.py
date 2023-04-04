@@ -1,9 +1,10 @@
 from enum import Enum
 
+
 class GameState(Enum):
-    Initial = 0
-    InitializeNewGame = 1
-    SingleGame = 2
-    ChallengeGame = 3
-    GameOver = 4
-    Exit = 99
+    INITIAL = 0
+    INITIALIZE_NEW_GAME = 1
+    SINGLE_GAME = 2
+    CHALLENGE_GAME = 3
+    GAME_OVER = 4
+    EXIT = 99

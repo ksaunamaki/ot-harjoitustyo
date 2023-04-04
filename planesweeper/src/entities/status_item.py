@@ -1,5 +1,5 @@
 from primitives.interfaces import RenderedObject
-from entities.world_background import WorldBackground
+
 
 class StatusItem(RenderedObject):
 

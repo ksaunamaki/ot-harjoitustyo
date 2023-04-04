@@ -4,15 +4,17 @@ from primitives.game_state import GameState
 from primitives.game_initialization import GameInitialization
 from loop import CoreLoop
 
+
 def main():
     renderer = PygameRenderer()
     pygame_events = PygameEvents()
-    coreLoop = CoreLoop(renderer, pygame_events)
+    core_loop = CoreLoop(renderer, pygame_events)
 
-    state = GameState.InitializeNewGame
-    gameInitialization = GameInitialization(1, True)
+    state = GameState.INITIALIZE_NEW_GAME
+    game_initialization = GameInitialization(1, True)
 
-    coreLoop.run(state, gameInitialization)
+    core_loop.run(state, game_initialization)
+
 
 if __name__ == "__main__":
     main()

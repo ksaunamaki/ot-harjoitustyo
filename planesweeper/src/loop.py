@@ -1,11 +1,11 @@
-from primitives.interfaces import RenderedObject,Renderer,EventsCore,EventType
-from primitives.interfaces import EventsCore,EventType
+from primitives.interfaces import RenderedObject, Renderer, EventsCore, EventType
 from primitives.game_state import GameState
 from primitives.game_initialization import GameInitialization
 from primitives.state_transition import StateTransition
 from entities.board import Gameboard
 from entities.status_item import StatusItem
 from entities.world_background import WorldBackground
+
 
 class CoreLoop:
     def __init__(self, renderer: Renderer, events: EventsCore):
@@ -21,85 +21,87 @@ class CoreLoop:
             event, pos = self._events.get()
 
             if event == EventType.EXIT:
-                return StateTransition(GameState.Exit)
-            
+                return StateTransition(GameState.EXIT)
+
             if event == EventType.LEFT_CLICK:
-                if game == None:
+                if game is None:
                     continue
 
-                piece_position = game.translate_event_position_to_piece_position(pos)
+                piece_position = game.translate_event_position_to_piece_position(
+                    pos)
 
-                if piece_position == None:
+                if piece_position is None:
                     continue
 
                 game.open_piece(piece_position)
 
             if event == EventType.RIGHT_CLICK:
-                if game == None:
+                if game is None:
                     continue
 
-                piece_position = game.translate_event_position_to_piece_position(pos)
+                piece_position = game.translate_event_position_to_piece_position(
+                    pos)
 
-                if piece_position == None:
+                if piece_position is None:
                     continue
 
                 game.mark_piece(piece_position)
 
             if event == EventType.NEW_GAME:
-                newGame: GameInitialization = None
+                new_game: GameInitialization = None
 
-                if game != None:
-                    newGame = GameInitialization(game.get_level())
+                if game is not None:
+                    new_game = GameInitialization(game.get_level())
                 else:
-                    newGame = GameInitialization(1)
+                    new_game = GameInitialization(1)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_1:
-                newGame: GameInitialization = GameInitialization(1)
+                new_game: GameInitialization = GameInitialization(1)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_2:
-                newGame: GameInitialization = GameInitialization(2)
+                new_game: GameInitialization = GameInitialization(2)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_3:
-                newGame: GameInitialization = GameInitialization(3)
+                new_game: GameInitialization = GameInitialization(3)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_4:
-                newGame: GameInitialization = GameInitialization(4)
+                new_game: GameInitialization = GameInitialization(4)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_5:
-                newGame: GameInitialization = GameInitialization(5)
+                new_game: GameInitialization = GameInitialization(5)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.CHANGE_LEVEL_6:
-                newGame: GameInitialization = GameInitialization(6)
+                new_game: GameInitialization = GameInitialization(6)
 
-                return StateTransition(GameState.InitializeNewGame, newGame)
-            
+                return StateTransition(GameState.INITIALIZE_NEW_GAME, new_game)
+
             if event == EventType.NONE:
                 break
-            
+
         return None
-    
+
     def _run_initial(self) -> StateTransition:
 
-        nextState: StateTransition = StateTransition(GameState.Initial)
+        next_state: StateTransition = StateTransition(GameState.INITIAL)
 
         while True:
             # events
             transition = self._process_ui_events()
 
-            if transition != None:
-                nextState = transition
+            if transition is not None:
+                next_state = transition
                 break
 
             # rendering
@@ -107,18 +109,18 @@ class CoreLoop:
 
             self._renderer.tick()
 
-        return nextState
+        return next_state
 
     def _run_game(self, state: GameState, game: Gameboard) -> StateTransition:
 
-        nextState: StateTransition = StateTransition(GameState.GameOver)
+        next_state: StateTransition = StateTransition(GameState.GAME_OVER)
 
         while True:
             # events
             transition = self._process_ui_events(game)
 
-            if transition != None:
-                nextState = transition
+            if transition is not None:
+                next_state = transition
                 break
 
             # rendering
@@ -127,78 +129,81 @@ class CoreLoop:
             rendered_objects.append(self._background)
 
             # game pieces
-            for boardItem in game.get_rendering_items():
-                rendered_objects.append(boardItem)
+            for board_item in game.get_rendering_items():
+                rendered_objects.append(board_item)
 
             # status bar items
-            radarStatus = StatusItem(-5)
-            radarStatus.set_text(f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}")
+            radar_status = StatusItem(-5)
+            radar_status.set_text(
+                f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}")
 
-            rendered_objects.append(radarStatus)
+            rendered_objects.append(radar_status)
 
-            if state == GameState.GameOver:
-                gameOverStatus = StatusItem(5)
-                gameOverStatus.set_text(f"GAME OVER! Press Alt+N to start new game with same level or Alt+1 - Alt+6 to change level")
+            if state == GameState.GAME_OVER:
+                game_over_status = StatusItem(5)
+                game_over_status.set_text(
+                    "GAME OVER! Press Alt+N to start new game with same level "
+                        "or Alt+1 - Alt+6 to change level")
 
-                rendered_objects.append(gameOverStatus)
+                rendered_objects.append(game_over_status)
 
             self._renderer.compose(rendered_objects)
 
             # check for game end
-            if state != GameState.GameOver:
+            if state != GameState.GAME_OVER:
                 game_result = game.is_finished()
 
-                if game_result != None:
+                if game_result is not None:
                     if game_result:
                         self._renderer.set_won_state()
                     else:
                         self._renderer.set_lost_state()
 
                     break
-            
+
             self._renderer.tick()
 
-        return nextState
+        return next_state
 
-    def run(self, initialState: GameState = GameState.Initial, gameInitialization: GameInitialization = None) -> bool:
+    def run(self,
+            state: GameState = GameState.INITIAL,
+            game_initialization: GameInitialization = None) -> bool:
 
         game: Gameboard = None
-        state = initialState
 
-        while state != GameState.Exit:
+        while state != GameState.EXIT:
 
             transition: StateTransition = None
 
-            if state == GameState.Initial:
+            if state == GameState.INITIAL:
                 transition = self._run_initial()
-            elif state == GameState.InitializeNewGame:
-                nextState = GameState.SingleGame
+            elif state == GameState.INITIALIZE_NEW_GAME:
+                next_state = GameState.SINGLE_GAME
 
-                if gameInitialization == None:
+                if game_initialization is None:
                     # initialize new simple game board
                     game = Gameboard(1)
                     game.create()
                 else:
-                    game = Gameboard(gameInitialization.level)
+                    game = Gameboard(game_initialization.level)
                     game.create()
 
-                    if not gameInitialization.singleGame:
-                        nextState = GameState.ChallengeGame
+                    if not game_initialization.single_game:
+                        next_state = GameState.CHALLENGE_GAME
 
                 self._background.position_board_on_world(game)
 
-                transition = StateTransition(nextState, game)
-            elif state == GameState.SingleGame or state == GameState.ChallengeGame or state == GameState.GameOver:
+                transition = StateTransition(next_state, game)
+            elif state in (GameState.SINGLE_GAME, GameState.CHALLENGE_GAME, GameState.GAME_OVER):
                 transition = self._run_game(state, game)
 
-            if transition != None:
+            if transition is not None:
                 state = transition.next
 
-                if state == GameState.SingleGame or state == GameState.ChallengeGame:
+                if state in (GameState.SINGLE_GAME, GameState.CHALLENGE_GAME):
                     game = transition.data
                     self._renderer.set_game_state()
-                elif state == GameState.InitializeNewGame:
-                    gameInitialization = transition.data
-                elif state == GameState.Initial:
+                elif state == GameState.INITIALIZE_NEW_GAME:
+                    game_initialization = transition.data
+                elif state == GameState.INITIAL:
                     self._renderer.set_game_state()
-            

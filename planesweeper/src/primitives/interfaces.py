@@ -1,27 +1,29 @@
 from enum import Enum
 from primitives.asset import Asset
 
+
 class RenderedObject:
-    def __init__(self, initial_position: tuple[int,int]):
+    def __init__(self, initial_position: tuple[int, int]):
         self._x = initial_position[0]
         self._y = initial_position[1]
         self._text: str = None
 
     def get_asset(self) -> Asset:
         return None
-    
-    def get_position(self) -> tuple[int,int]:
+
+    def get_position(self) -> tuple[int, int]:
         return (self._x, self._y)
-    
+
     def change_position(self, new_position: tuple[int, int]):
         self._x = new_position[0]
         self._y = new_position[1]
 
     def get_text(self) -> str:
         return self._text
-    
-    def get_line(self) -> tuple[tuple[int,int],tuple[int,int],tuple[int,int,int]]:
+
+    def get_line(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int, int]]:
         return None
+
 
 class Renderer:
     WINDOW_TITLE = "Planesweeper"
@@ -46,6 +48,7 @@ class Renderer:
     def set_lost_state(self):
         pass
 
+
 class EventType(Enum):
     NONE = 0
     EXIT = 1
@@ -59,6 +62,7 @@ class EventType(Enum):
     CHANGE_LEVEL_5 = 15
     CHANGE_LEVEL_6 = 16
 
+
 class EventsCore:
-    def get(self) -> tuple[EventType, tuple[int,int]]:
+    def get(self) -> tuple[EventType, tuple[int, int]]:
         return (EventType.NONE, None)
