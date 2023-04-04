@@ -12,11 +12,11 @@ class BoardPieceSize(Enum):
 class Gameboard:
     LEVELS = {
         1: [(5,5), 3],
-        2: [(9, 9), 10],
-        3: [(15, 10), 30],
-        4: [(30, 16), 70],
-        5: [(55, 20), 155],
-        6: [(58, 29), 200]
+        2: [(9, 9), 19],
+        3: [(15, 12), 44],
+        4: [(30, 16), 139],
+        5: [(55, 20), 333],
+        6: [(58, 29), 599]
     }
 
     def __init__(self, level: int, draw_at: tuple[int, int] = (0,0)):
@@ -132,6 +132,7 @@ class Gameboard:
     def create(self, randomize_planes: bool = True):
         # Initialize new game board
         plane_indexes = []
+        self._pieces: list[BoardPiece] = [None] * (self._xsize * self._ysize)
         piece_in_pixels = self._get_piece_in_pixels()
 
         total_pieces = len(self._pieces)
@@ -173,7 +174,7 @@ class Gameboard:
         
         for x in range(0, width+1, pixels):
             self._gridLines.append(BoardGridItem((self._xoffset+x, self._yoffset),(self._xoffset+x, self._yoffset+height),color))
-        
+    
 
     def get_level(self) -> int:
         return self._level
@@ -260,8 +261,18 @@ class Gameboard:
         if x < self._xsize-1:
             # check right
             self._open_adjacent_pieces((x+1, y), position)
+    
+    def _is_first_open(self) -> bool:
+        count = 0
 
-        
+        for piece in self._pieces:
+            if piece.is_open():
+                count += 1
+            
+            if count > 1:
+                return False
+            
+        return count == 1
     
     def _check_for_win(self):
         for piece in self._pieces:
@@ -274,10 +285,23 @@ class Gameboard:
         if piece.is_open() or piece.is_marked():
             return # no-op
         
-        if not piece.open():
+        result = piece.open()
+        
+        if not result:
             # Game over
-            self._lost = True
-            return
+
+            # ...but to make game fair, if this was very first first piece, keep generating new pieces
+            # until we don't hit plane first
+            isFirst = self._is_first_open()
+
+            if not isFirst:
+                self._lost = True
+                return
+
+            while not result:
+                self.create()
+                piece = self._pieces[self._get_index_from_position(position)]
+                result = piece.open()
         
         # if empty piece, automatically open all adjacent empty and number pieces
         if piece.get_type() == BoardPieceType.Empty:
@@ -327,4 +351,5 @@ class Gameboard:
             return False
         
         return None
+    
 
