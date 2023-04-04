@@ -111,6 +111,32 @@ class CoreLoop:
 
         return next_state
 
+    def _render_game_ui(self, rendered_objects: list[RenderedObject],
+                        game: Gameboard):
+        # background
+        rendered_objects.append(self._background)
+
+        # game pieces
+        for board_item in game.get_rendering_items():
+            rendered_objects.append(board_item)
+
+    def _render_status_bar(self, rendered_objects: list[RenderedObject],
+                           state: GameState, game: Gameboard = None):
+        if game is not None:
+            radar_status = StatusItem(-5)
+            radar_status.set_text(
+                f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}")
+
+            rendered_objects.append(radar_status)
+
+        if state == GameState.GAME_OVER:
+            game_over_status = StatusItem(5)
+            game_over_status.set_text(
+                "GAME OVER! Press Alt+N to start new game with same level "
+                    "or Alt+1 - Alt+6 to change level")
+
+            rendered_objects.append(game_over_status)
+
     def _run_game(self, state: GameState, game: Gameboard) -> StateTransition:
 
         next_state: StateTransition = StateTransition(GameState.GAME_OVER)
@@ -126,26 +152,8 @@ class CoreLoop:
             # rendering
             rendered_objects: list[RenderedObject] = []
 
-            rendered_objects.append(self._background)
-
-            # game pieces
-            for board_item in game.get_rendering_items():
-                rendered_objects.append(board_item)
-
-            # status bar items
-            radar_status = StatusItem(-5)
-            radar_status.set_text(
-                f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}")
-
-            rendered_objects.append(radar_status)
-
-            if state == GameState.GAME_OVER:
-                game_over_status = StatusItem(5)
-                game_over_status.set_text(
-                    "GAME OVER! Press Alt+N to start new game with same level "
-                        "or Alt+1 - Alt+6 to change level")
-
-                rendered_objects.append(game_over_status)
+            self._render_game_ui(rendered_objects, game)
+            self._render_status_bar(rendered_objects, state, game)
 
             self._renderer.compose(rendered_objects)
 
@@ -153,17 +161,37 @@ class CoreLoop:
             if state != GameState.GAME_OVER:
                 game_result = game.is_finished()
 
-                if game_result is not None:
-                    if game_result:
-                        self._renderer.set_won_state()
-                    else:
-                        self._renderer.set_lost_state()
+                if game_result is not None and game_result:
+                    self._renderer.set_won_state()
+                    break
 
+                if game_result is not None and not game_result:
+                    self._renderer.set_lost_state()
                     break
 
             self._renderer.tick()
 
         return next_state
+
+    def _initialize_new_game(self,
+            game_initialization: GameInitialization = None) -> StateTransition:
+
+        next_state = GameState.SINGLE_GAME
+
+        if game_initialization is None:
+            # initialize new simple game board
+            game = Gameboard(1)
+            game.create()
+        else:
+            game = Gameboard(game_initialization.level)
+            game.create()
+
+            if not game_initialization.single_game:
+                next_state = GameState.CHALLENGE_GAME
+
+        self._background.position_board_on_world(game)
+
+        return StateTransition(next_state, game)
 
     def run(self,
             state: GameState = GameState.INITIAL,
@@ -178,22 +206,7 @@ class CoreLoop:
             if state == GameState.INITIAL:
                 transition = self._run_initial()
             elif state == GameState.INITIALIZE_NEW_GAME:
-                next_state = GameState.SINGLE_GAME
-
-                if game_initialization is None:
-                    # initialize new simple game board
-                    game = Gameboard(1)
-                    game.create()
-                else:
-                    game = Gameboard(game_initialization.level)
-                    game.create()
-
-                    if not game_initialization.single_game:
-                        next_state = GameState.CHALLENGE_GAME
-
-                self._background.position_board_on_world(game)
-
-                transition = StateTransition(next_state, game)
+                transition = self._initialize_new_game(game_initialization)
             elif state in (GameState.SINGLE_GAME, GameState.CHALLENGE_GAME, GameState.GAME_OVER):
                 transition = self._run_game(state, game)
 

@@ -8,4 +8,5 @@
 | 30.3. |  10h | Perusrungon toteutus |
 | 31.3. |  4h | Perusrungon toteutus, testaus |
 | 1.4. |  1h | Dokumentaation päivitys |
-| Yhteensä | 20h |           |
+| 4.4. |  2h | Koodin siivousta ja refactorointia pylintin perusteella |
+| Yhteensä | 22h |           |

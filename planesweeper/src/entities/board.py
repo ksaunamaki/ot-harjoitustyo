@@ -48,37 +48,37 @@ class Gameboard:
         return position[1] * self._xsize + position[0]
 
     def _get_position_from_index(self, index) -> tuple[int, int]:
-        y = index // self._xsize
-        x = index - (y * self._xsize)
+        y_pos = index // self._xsize
+        x_pos = index - (y_pos * self._xsize)
 
-        return (x, y)
+        return (x_pos, y_pos)
 
     def _get_surrounding_planes(self, position: tuple[int, int]) -> int:
-        x = position[0]
-        y = position[1]
+        x_pos = position[0]
+        y_pos = position[1]
         planes = 0
         positions = []
 
-        if y > 0:
+        if y_pos > 0:
             # check row before
-            if x > 0:
-                positions.append((x-1, y-1))
-            positions.append((x, y-1))
-            if x < self._xsize-1:
-                positions.append((x+1, y-1))
+            if x_pos > 0:
+                positions.append((x_pos-1, y_pos-1))
+            positions.append((x_pos, y_pos-1))
+            if x_pos < self._xsize-1:
+                positions.append((x_pos+1, y_pos-1))
 
-        if x > 0:
-            positions.append((x-1, y))
-        if x < self._xsize-1:
-            positions.append((x+1, y))
+        if x_pos > 0:
+            positions.append((x_pos-1, y_pos))
+        if x_pos < self._xsize-1:
+            positions.append((x_pos+1, y_pos))
 
-        if y < self._ysize-1:
+        if y_pos < self._ysize-1:
             # check row after
-            if x > 0:
-                positions.append((x-1, y+1))
-            positions.append((x, y+1))
-            if x < self._xsize-1:
-                positions.append((x+1, y+1))
+            if x_pos > 0:
+                positions.append((x_pos-1, y_pos+1))
+            positions.append((x_pos, y_pos+1))
+            if x_pos < self._xsize-1:
+                positions.append((x_pos+1, y_pos+1))
 
         for position_to_check in positions:
             index = self._get_index_from_position(position_to_check)
@@ -106,9 +106,9 @@ class Gameboard:
         self._xoffset: int = draw_at[0]
         self._yoffset: int = draw_at[1]
 
-        for index in range(0, len(self._pieces)):
+        for index, piece in enumerate(self._pieces):
             position = self._get_position_from_index(index)
-            self._pieces[index].change_position(
+            piece.change_position(
                 self._calculate_drawing_position(position))
 
         self._grid_lines = None
@@ -126,13 +126,13 @@ class Gameboard:
         if event_x > piece_pixels*self._xsize or event_y > piece_pixels*self._ysize:
             return None  # out of bounds
 
-        x = event_x // piece_pixels
-        y = event_y // piece_pixels
+        x_pos = event_x // piece_pixels
+        y_pos = event_y // piece_pixels
 
-        if x >= self._xsize or y >= self._ysize:
+        if x_pos >= self._xsize or y_pos >= self._ysize:
             return None  # out of bounds
 
-        return (x, y)
+        return (x_pos, y_pos)
 
     def create(self, randomize_planes: bool = True):
         # Initialize new game board
@@ -180,13 +180,17 @@ class Gameboard:
 
         color = (100, 100, 100)
 
-        for y in range(0, height+1, pixels):
+        for y_pos in range(0, height+1, pixels):
             self._grid_lines.append(BoardGridItem(
-                (self._xoffset, self._yoffset+y), (self._xoffset+width, self._yoffset+y), color))
+                (self._xoffset, self._yoffset+y_pos),
+                (self._xoffset+width, self._yoffset+y_pos),
+                color))
 
-        for x in range(0, width+1, pixels):
+        for x_pos in range(0, width+1, pixels):
             self._grid_lines.append(BoardGridItem(
-                (self._xoffset+x, self._yoffset), (self._xoffset+x, self._yoffset+height), color))
+                (self._xoffset+x_pos, self._yoffset),
+                (self._xoffset+x_pos, self._yoffset+height),
+                color))
 
     def get_level(self) -> int:
         return self._level
@@ -225,9 +229,33 @@ class Gameboard:
 
         return (pixels, pixels)
 
+    def _open_adjacent_pieces_above(self, x_pos:int, y_pos: int, position: tuple[int, int]):
+        # check up
+        self._open_adjacent_pieces((x_pos, y_pos-1), position)
+
+        if x_pos > 0:
+            # check left
+            self._open_adjacent_pieces((x_pos-1, y_pos-1), position)
+
+        if x_pos < self._xsize-1:
+            # check right
+            self._open_adjacent_pieces((x_pos+1, y_pos-1), position)
+
+    def _open_adjacent_pieces_below(self, x_pos:int, y_pos: int, position: tuple[int, int]):
+        # check down
+        self._open_adjacent_pieces((x_pos, y_pos+1), position)
+
+        if x_pos > 0:
+            # check left
+            self._open_adjacent_pieces((x_pos-1, y_pos+1), position)
+
+        if x_pos < self._xsize-1:
+            # check right
+            self._open_adjacent_pieces((x_pos+1, y_pos+1), position)
+
     def _open_adjacent_pieces(self, position: tuple[int, int], previous: tuple[int, int] = None):
-        x = position[0]
-        y = position[1]
+        x_pos = position[0]
+        y_pos = position[1]
 
         piece = self._pieces[self._get_index_from_position(position)]
 
@@ -243,37 +271,19 @@ class Gameboard:
         if piece_type != BoardPieceType.EMPTY:
             return
 
-        if y > 0:
-            # check up
-            self._open_adjacent_pieces((x, y-1), position)
+        if y_pos > 0:
+            self._open_adjacent_pieces_above(x_pos, y_pos, position)
 
-            if x > 0:
-                # check left
-                self._open_adjacent_pieces((x-1, y-1), position)
+        if y_pos < self._ysize-1:
+            self._open_adjacent_pieces_below(x_pos, y_pos, position)
 
-            if x < self._xsize-1:
-                # check right
-                self._open_adjacent_pieces((x+1, y-1), position)
-
-        if y < self._ysize-1:
-            # check down
-            self._open_adjacent_pieces((x, y+1), position)
-
-            if x > 0:
-                # check left
-                self._open_adjacent_pieces((x-1, y+1), position)
-
-            if x < self._xsize-1:
-                # check right
-                self._open_adjacent_pieces((x+1, y+1), position)
-
-        if x > 0:
+        if x_pos > 0:
             # check left
-            self._open_adjacent_pieces((x-1, y), position)
+            self._open_adjacent_pieces((x_pos-1, y_pos), position)
 
-        if x < self._xsize-1:
+        if x_pos < self._xsize-1:
             # check right
-            self._open_adjacent_pieces((x+1, y), position)
+            self._open_adjacent_pieces((x_pos+1, y_pos), position)
 
     def _is_first_open(self) -> bool:
         count = 0
