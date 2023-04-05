@@ -1,5 +1,7 @@
 from enum import Enum
 from primitives.asset import Asset
+from primitives.position import Position
+from primitives.size import Size
 from primitives.interfaces import RenderedObject
 from services.asset_service import AssetService
 
@@ -14,7 +16,7 @@ class BoardPiece(RenderedObject):
     cached_assets = {}
 
     def __init__(self, piece_size: int, piece_type: BoardPieceType, data,
-                 initial_position: tuple[int, int]):
+                 initial_position: Position):
         super().__init__(initial_position)
 
         self._type = piece_type
@@ -50,8 +52,8 @@ class BoardPiece(RenderedObject):
 
         return None
 
-    def get_dimensions(self) -> tuple[int, int]:
-        return (self._size, self._size)
+    def get_dimensions(self) -> Size:
+        return Size(self._size, self._size)
 
     def is_marked(self):
         return self._marked

@@ -1,16 +1,17 @@
 import pygame
 from primitives.interfaces import EventsCore, EventType
+from primitives.position import Position
 
 
 class PygameEvents(EventsCore):
-    def get(self) -> tuple[EventType, tuple[int, int]]:
+    def get(self) -> tuple[EventType, Position]:
         event = pygame.event.poll()
 
         if event.type == pygame.QUIT:
             return (EventType.EXIT, None)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            position = event.dict["pos"]
+            position = Position(event.dict["pos"][0],event.dict["pos"][1])
             button = event.dict["button"]
 
             if button == 1:

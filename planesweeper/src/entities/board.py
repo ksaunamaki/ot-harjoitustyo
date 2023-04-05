@@ -1,6 +1,9 @@
 from enum import Enum
+from collections import deque
 import random
 from primitives.interfaces import RenderedObject
+from primitives.position import Position
+from primitives.size import Size
 from entities.board_piece import BoardPiece, BoardPieceType
 from entities.board_grid_item import BoardGridItem
 
@@ -10,6 +13,15 @@ class BoardPieceSize(Enum):
     MEDIUM = 1
     LARGE = 2
 
+class VisitedStackItem:
+    def __init__(self, position: Position, neighbours: list[Position],
+                 item_processed: bool = False,
+                 is_empty: bool = False):
+        self.position: Position = position
+        self.neighbours: list[Position] = neighbours
+        self.index: int = 0
+        self.item_processed: bool = item_processed
+        self.is_empty: bool = is_empty
 
 class Gameboard:
     LEVELS = {
@@ -21,8 +33,8 @@ class Gameboard:
         6: [(58, 29), 599]
     }
 
-    def __init__(self, level: int, draw_at: tuple[int, int] = (0, 0)):
-        if level < 0 or level > 6:
+    def __init__(self, level: int):
+        if level < 1 or level > 6:
             raise ValueError()
 
         self._level = level
@@ -30,11 +42,11 @@ class Gameboard:
         self._lost = False
         self._xsize: int = Gameboard.LEVELS[level][0][0]
         self._ysize: int = Gameboard.LEVELS[level][0][1]
-        self._xoffset: int = draw_at[0]
-        self._yoffset: int = draw_at[1]
+        self._offset: Position = Position(0,0)
         self._planes: int = Gameboard.LEVELS[level][1]
         self._pieces: list[BoardPiece] = [None] * (self._xsize * self._ysize)
         self._grid_lines: list[BoardGridItem] = None
+        self._max_recursion_depth = self._xsize + self._ysize
 
         self._piece_size = BoardPieceSize.MEDIUM
 
@@ -44,43 +56,45 @@ class Gameboard:
         if level >= 5:
             self._piece_size = BoardPieceSize.SMALL
 
-    def _get_index_from_position(self, position: tuple[int, int]) -> int:
-        return position[1] * self._xsize + position[0]
+    def _get_index_from_position(self, position: Position) -> int:
+        return position.y * self._xsize + position.x
 
-    def _get_position_from_index(self, index) -> tuple[int, int]:
+    def _get_position_from_index(self, index) -> Position:
         y_pos = index // self._xsize
         x_pos = index - (y_pos * self._xsize)
 
-        return (x_pos, y_pos)
+        return Position(x_pos, y_pos)
 
-    def _get_surrounding_planes(self, position: tuple[int, int]) -> int:
-        x_pos = position[0]
-        y_pos = position[1]
-        planes = 0
+    def _get_neighbouring_positions(self, position: Position,
+                                    exclude: set[Position] = None) -> list[Position]:
         positions = []
 
-        if y_pos > 0:
-            # check row before
-            if x_pos > 0:
-                positions.append((x_pos-1, y_pos-1))
-            positions.append((x_pos, y_pos-1))
-            if x_pos < self._xsize-1:
-                positions.append((x_pos+1, y_pos-1))
+        for x_pos,y_pos in [(position.x, position.y-1),
+                            (position.x+1, position.y-1),
+                            (position.x+1, position.y),
+                            (position.x+1, position.y+1),
+                            (position.x, position.y+1),
+                            (position.x-1, position.y+1),
+                            (position.x-1, position.y),
+                            (position.x-1, position.y-1)
+                            ]:
+            if x_pos < 0 or x_pos > self._xsize-1 or \
+                y_pos < 0 or y_pos > self._ysize-1:
+                continue
 
-        if x_pos > 0:
-            positions.append((x_pos-1, y_pos))
-        if x_pos < self._xsize-1:
-            positions.append((x_pos+1, y_pos))
+            new_pos = Position(x_pos, y_pos)
 
-        if y_pos < self._ysize-1:
-            # check row after
-            if x_pos > 0:
-                positions.append((x_pos-1, y_pos+1))
-            positions.append((x_pos, y_pos+1))
-            if x_pos < self._xsize-1:
-                positions.append((x_pos+1, y_pos+1))
+            if exclude is not None and new_pos in exclude:
+                continue
 
-        for position_to_check in positions:
+            positions.append(new_pos)
+
+        return positions
+
+    def _get_surrounding_planes(self, position: Position) -> int:
+        planes = 0
+
+        for position_to_check in self._get_neighbouring_positions(position):
             index = self._get_index_from_position(position_to_check)
 
             if self._pieces[index] is not None and \
@@ -98,13 +112,13 @@ class Gameboard:
 
         return 15
 
-    def _calculate_drawing_position(self, position: tuple[int, int]):
+    def _calculate_drawing_position(self, position: Position):
         pixels = self._get_piece_in_pixels()
-        return (self._xoffset+position[0]*pixels, self._yoffset+position[1]*pixels)
+        return Position(self._offset.x + position.x * pixels,
+                self._offset.y + position.y * pixels)
 
-    def change_position(self, draw_at: tuple[int, int]):
-        self._xoffset: int = draw_at[0]
-        self._yoffset: int = draw_at[1]
+    def change_position(self, draw_at: Position):
+        self._offset = draw_at
 
         for index, piece in enumerate(self._pieces):
             position = self._get_position_from_index(index)
@@ -114,16 +128,16 @@ class Gameboard:
         self._grid_lines = None
 
     def translate_event_position_to_piece_position(self,
-            event_position: tuple[int, int]) -> tuple[int, int]:
-        event_x = event_position[0] - self._xoffset
-        event_y = event_position[1] - self._yoffset
+            event_position: Position) -> Position:
+        event_x = event_position.x - self._offset.x
+        event_y = event_position.y - self._offset.y
 
         if event_x < 0 or event_y < 0:
             return None  # out of bounds
 
         piece_pixels = self._get_piece_in_pixels()
 
-        if event_x > piece_pixels*self._xsize or event_y > piece_pixels*self._ysize:
+        if event_x > piece_pixels * self._xsize or event_y > piece_pixels * self._ysize:
             return None  # out of bounds
 
         x_pos = event_x // piece_pixels
@@ -132,7 +146,7 @@ class Gameboard:
         if x_pos >= self._xsize or y_pos >= self._ysize:
             return None  # out of bounds
 
-        return (x_pos, y_pos)
+        return Position(x_pos, y_pos)
 
     def create(self, randomize_planes: bool = True):
         # Initialize new game board
@@ -182,14 +196,14 @@ class Gameboard:
 
         for y_pos in range(0, height+1, pixels):
             self._grid_lines.append(BoardGridItem(
-                (self._xoffset, self._yoffset+y_pos),
-                (self._xoffset+width, self._yoffset+y_pos),
+                Position(self._offset.x, self._offset.y + y_pos),
+                Position(self._offset.x + width, self._offset.y + y_pos),
                 color))
 
         for x_pos in range(0, width+1, pixels):
             self._grid_lines.append(BoardGridItem(
-                (self._xoffset+x_pos, self._yoffset),
-                (self._xoffset+x_pos, self._yoffset+height),
+                Position(self._offset.x + x_pos, self._offset.y),
+                Position(self._offset.x + x_pos, self._offset.y + height),
                 color))
 
     def get_level(self) -> int:
@@ -220,70 +234,58 @@ class Gameboard:
 
         return marked
 
-    def get_dimensions(self) -> tuple[int, int]:
-        return (self._xsize * self._get_piece_in_pixels(),
+    def get_dimensions(self) -> Size:
+        return Size(self._xsize * self._get_piece_in_pixels(),
                 self._ysize * self._get_piece_in_pixels())
 
-    def get_piece_dimensions(self) -> tuple[int, int]:
+    def get_piece_dimensions(self) -> Size:
         pixels = self._get_piece_in_pixels()
 
-        return (pixels, pixels)
+        return Size(pixels, pixels)
 
-    def _open_adjacent_pieces_above(self, x_pos:int, y_pos: int, position: tuple[int, int]):
-        # check up
-        self._open_adjacent_pieces((x_pos, y_pos-1), position)
+    def _open_adjacent_piece(self, item: VisitedStackItem):
+        item.item_processed = True
 
-        if x_pos > 0:
-            # check left
-            self._open_adjacent_pieces((x_pos-1, y_pos-1), position)
+        index = self._get_index_from_position(item.position)
 
-        if x_pos < self._xsize-1:
-            # check right
-            self._open_adjacent_pieces((x_pos+1, y_pos-1), position)
+        piece = self._pieces[index]
 
-    def _open_adjacent_pieces_below(self, x_pos:int, y_pos: int, position: tuple[int, int]):
-        # check down
-        self._open_adjacent_pieces((x_pos, y_pos+1), position)
+        if not piece.is_open() and not piece.is_marked():
+            piece_type = piece.get_type()
 
-        if x_pos > 0:
-            # check left
-            self._open_adjacent_pieces((x_pos-1, y_pos+1), position)
+            if piece_type in (BoardPieceType.EMPTY, BoardPieceType.NUMBER):
+                piece.open()
 
-        if x_pos < self._xsize-1:
-            # check right
-            self._open_adjacent_pieces((x_pos+1, y_pos+1), position)
+            if piece_type == BoardPieceType.EMPTY:
+                item.is_empty = True
 
-    def _open_adjacent_pieces(self, position: tuple[int, int], previous: tuple[int, int] = None):
-        x_pos = position[0]
-        y_pos = position[1]
+    def _open_adjacent_pieces(self, position: Position):
+        visited = set()
+        item = VisitedStackItem(position, self._get_neighbouring_positions(position),
+                                item_processed = True, is_empty = True)
+        visit_stack = deque()
+        visit_stack.append(item)
 
-        piece = self._pieces[self._get_index_from_position(position)]
+        while len(visit_stack) > 0:
+            item = visit_stack.pop()
 
-        if piece.is_open() or piece.is_marked():
-            if previous is not None:
-                return
+            visited.add(item.position)
 
-        piece_type = piece.get_type()
+            if not item.item_processed:
+                self._open_adjacent_piece(item)
 
-        if piece_type in (BoardPieceType.EMPTY, BoardPieceType.NUMBER):
-            piece.open()
+            item.index += 1
 
-        if piece_type != BoardPieceType.EMPTY:
-            return
+            if item.index <= len(item.neighbours):
+                visit_stack.append(item)
 
-        if y_pos > 0:
-            self._open_adjacent_pieces_above(x_pos, y_pos, position)
+                if not item.is_empty:
+                    continue
 
-        if y_pos < self._ysize-1:
-            self._open_adjacent_pieces_below(x_pos, y_pos, position)
-
-        if x_pos > 0:
-            # check left
-            self._open_adjacent_pieces((x_pos-1, y_pos), position)
-
-        if x_pos < self._xsize-1:
-            # check right
-            self._open_adjacent_pieces((x_pos+1, y_pos), position)
+                next_position = item.neighbours[item.index-1]
+                item = VisitedStackItem(next_position,
+                                        self._get_neighbouring_positions(next_position, visited))
+                visit_stack.append(item)
 
     def _is_first_open(self) -> bool:
         count = 0
@@ -304,7 +306,7 @@ class Gameboard:
 
         self._won = True
 
-    def _open_piece(self, piece: BoardPiece, position: tuple[int, int]):
+    def _open_piece(self, piece: BoardPiece, position: Position):
         if piece.is_open() or piece.is_marked():
             return  # no-op
 
@@ -332,7 +334,7 @@ class Gameboard:
 
         self._check_for_win()
 
-    def open_piece(self, position: tuple[int, int]):
+    def open_piece(self, position: Position):
         if self._won or self._lost:
             return
 
@@ -342,7 +344,7 @@ class Gameboard:
 
         self._open_piece(piece, position)
 
-    def mark_piece(self, position: tuple[int, int]):
+    def mark_piece(self, position: Position):
         if self._won or self._lost:
             return
 

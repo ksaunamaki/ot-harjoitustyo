@@ -1,27 +1,26 @@
 from enum import Enum
 from primitives.asset import Asset
+from primitives.position import Position
 
 
 class RenderedObject:
-    def __init__(self, initial_position: tuple[int, int]):
-        self._x = initial_position[0]
-        self._y = initial_position[1]
+    def __init__(self, initial_position: Position):
+        self._position = Position(initial_position.x, initial_position.y)
         self._text: str = None
 
     def get_asset(self) -> Asset:
         return None
 
-    def get_position(self) -> tuple[int, int]:
-        return (self._x, self._y)
+    def get_position(self) -> Position:
+        return Position(self._position.x, self._position.y)
 
-    def change_position(self, new_position: tuple[int, int]):
-        self._x = new_position[0]
-        self._y = new_position[1]
+    def change_position(self, new_position: Position):
+        self._position = Position(new_position.x, new_position.y)
 
     def get_text(self) -> str:
         return self._text
 
-    def get_line(self) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int, int]]:
+    def get_line(self) -> tuple[Position, Position, tuple[int, int, int]]:
         return None
 
 
@@ -64,5 +63,5 @@ class EventType(Enum):
 
 
 class EventsCore:
-    def get(self) -> tuple[EventType, tuple[int, int]]:
+    def get(self) -> tuple[EventType, Position]:
         return (EventType.NONE, None)
