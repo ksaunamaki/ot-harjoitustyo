@@ -159,7 +159,7 @@ class CoreLoop:
 
             # check for game end
             if state != GameState.GAME_OVER:
-                game_result = game.is_finished()
+                game_result = game.game_end_result()
 
                 if game_result is not None and game_result:
                     self._renderer.set_won_state()

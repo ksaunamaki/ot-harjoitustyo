@@ -368,7 +368,7 @@ class Gameboard:
 
         self._check_for_win()
 
-    def is_finished(self) -> bool:
+    def game_end_result(self) -> bool:
         if self._won:
             return True
 
