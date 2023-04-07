@@ -1,7 +1,8 @@
 from entities.board import Gameboard
-from primitives.interfaces import RenderedObject
+from primitives.interfaces import Renderer, RenderedObject
 from primitives.position import Position
 from primitives.size import Size
+from primitives.text_object import TextObject
 from services.asset_service import AssetService
 
 
@@ -9,8 +10,12 @@ class WorldBackground(RenderedObject):
     WIDTH = 900
     HEIGHT = 450
 
-    def __init__(self):
-        super().__init__(Position(0, 0))
+    def __init__(self, renderer: Renderer = None):
+        super().__init__(Position(0,0), renderer)
+
+        if renderer is not None:
+            text = "New game: Alt+N, new game with level: Alt+[1-6]"
+            self._text = TextObject(text, Position(5, renderer.get_play_area_size().height-20))
 
     def position_board_on_world(self, board: Gameboard):
         dimensions = board.get_dimensions()

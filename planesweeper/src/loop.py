@@ -11,7 +11,7 @@ from services.events_handling_service import EventsHandlingService
 class CoreLoop:
     def __init__(self, renderer: Renderer, events: EventsCore):
         self._renderer = renderer
-        self._background = WorldBackground()
+        self._background = WorldBackground(renderer)
         self.events_handler = EventsHandlingService(events)
 
     def _run_initial(self) -> StateTransition:
@@ -45,17 +45,15 @@ class CoreLoop:
     def _render_status_bar(self, rendered_objects: list[RenderedObject],
                            state: GameState, game: Gameboard = None):
         if game is not None:
-            radar_status = StatusItem(-5)
-            radar_status.set_text(
-                f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}")
+            radar_text = f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}"
+            radar_status = StatusItem(radar_text, -5, True, self._renderer)
 
             rendered_objects.append(radar_status)
 
         if state == GameState.GAME_OVER:
-            game_over_status = StatusItem(5)
-            game_over_status.set_text(
-                "GAME OVER! Press Alt+N to start new game with same level "
-                    "or Alt+1 - Alt+6 to change level")
+            game_over_text = "GAME OVER! Press Alt+N to start new game with same level "\
+                    "or Alt+1 - Alt+6 to change level"
+            game_over_status = StatusItem(game_over_text, 5, False, self._renderer)
 
             rendered_objects.append(game_over_status)
 

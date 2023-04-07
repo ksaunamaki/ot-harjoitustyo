@@ -1,11 +1,14 @@
 import pygame
 from primitives.interfaces import Renderer, RenderedObject, Asset
 from primitives.position import Position
+from primitives.size import Size
+from primitives.text_object import TextObject
 from services.asset_service import AssetService
 
 
 class PygameRenderer(Renderer):
     _loaded_images = {}
+    _fonts = {}
     _status_font: pygame.font.Font = None
     _status_colors = {
         "game": pygame.Color(0, 0, 0),
@@ -32,57 +35,97 @@ class PygameRenderer(Renderer):
 
         self._current_status_color = self._status_colors["game"]
 
-    def _render_asset(self, asset: Asset, pos: Position):
-        if asset is not None and asset.path is not None:
-            if asset.key not in self._loaded_images:
-                self._loaded_images[asset.key] = pygame.image.load(asset.path)
+    def _calculate_positioning(self, pos: Position, container_size: Size = None) -> Position:
+        actual_positioning = Position(pos.x, pos.y)
 
-            self._screen.blit(self._loaded_images[asset.key], (pos.x, pos.y))
+        container_width = container_size.width\
+            if container_size is not None\
+            else Renderer.WINDOW_WIDTH
 
-    def _render_text(self, text: str, pos: Position,
-                     is_negative_xpos: bool, is_negative_ypos: bool):
-        if text is not None:
-            text = self._status_font.render(
-                text, True, pygame.Color(255, 255, 255))
-            text_x = pos.x
-            text_y = pos.y
-
-            if is_negative_xpos:
-                # move text's x position back width's worth
-                text_x = pos.x - text.get_width()
-
-            if is_negative_ypos:
-                # move text's y position back height's worth
-                text_y = pos.y - text.get_height()
-
-            self._screen.blit(text, (text_x, text_y))
-
-    def _render_line(self, line: tuple[Position, Position, tuple[int, int, int]]):
-        if line is not None:
-            pygame.draw.line(self._screen,
-                             pygame.Color(220, 220, 220),
-                               (line[0].x, line[0].y),
-                                 (line[1].x, line[1].y))
-
-    def _render_item(self, obj: RenderedObject):
-        pos = obj.get_position()
-
-        is_negative_xpos = False
-        is_negative_ypos = False
+        container_height = container_size.height\
+            if container_size is not None\
+            else Renderer.WINDOW_HEIGHT
 
         if pos.x < 0:
-            # calculate from end of window
-            pos = Position(Renderer.WINDOW_WIDTH + pos.x, pos.y)
-            is_negative_xpos = True
+            # calculate from end of container
+            actual_positioning.x = container_width + pos.x
 
         if pos.y < 0:
-            # calculate from bottom of window
-            pos = Position(pos.x, Renderer.WINDOW_HEIGHT + pos.y)
-            is_negative_ypos = True
+            # calculate from bottom of container
+            actual_positioning.y = container_height + pos.y
 
-        self._render_asset(obj.get_asset(), pos)
-        self._render_text(obj.get_text(), pos, is_negative_xpos, is_negative_ypos)
-        self._render_line(obj.get_line())
+        return actual_positioning
+
+    def _get_font_for_text(self, font_size: int) -> pygame.font.Font:
+        if font_size is None:
+            # get default size'd font
+            font_size = 11
+
+        font = None
+
+        if font_size not in self._fonts:
+            font = pygame.font.Font(pygame.font.get_default_font(), font_size)
+        else:
+            font = self._fonts[font_size]
+
+        return font
+
+    def _render_asset(self, asset: Asset, pos: Position):
+        if asset.key not in self._loaded_images:
+            self._loaded_images[asset.key] = pygame.image.load(asset.path)
+
+        self._screen.blit(self._loaded_images[asset.key], (pos.x, pos.y))
+
+    def _render_text(self, text_object: TextObject, pos: Position):
+        relative_pos = text_object.get_position()
+        font = self._get_font_for_text(text_object.get_size())
+        color = text_object.get_color()
+
+        rendered_text = font.render(text_object.get_text(),
+                                    True,
+                                    pygame.Color(color.rgb_r,
+                                                 color.rgb_g,
+                                                 color.rgb_b,
+                                                 color.alpha * 255))
+
+        text_x = pos.x
+        text_y = pos.y
+
+        if relative_pos.x < 0:
+            # move text's x position back width's worth + relarive offset
+            text_x = pos.x - rendered_text.get_width() + relative_pos.x
+        else:
+            text_x = pos.x + relative_pos.x
+
+        if relative_pos.y < 0:
+            # move text's y position back height's worth + relarive offset
+            text_y = pos.y - rendered_text.get_height() + relative_pos.y
+        else:
+            text_y = pos.y + relative_pos.y
+
+        self._screen.blit(rendered_text, (text_x, text_y))
+
+    def _render_line(self, line: tuple[Position, Position, tuple[int, int, int]]):
+        pygame.draw.line(self._screen,
+                            pygame.Color(220, 220, 220),
+                            (line[0].x, line[0].y),
+                                (line[1].x, line[1].y))
+
+    def _render_item(self, obj: RenderedObject):
+        image_asset = obj.get_asset()
+        text = obj.get_text()
+        line = obj.get_line()
+
+        pos = self._calculate_positioning(obj.get_position())
+
+        if image_asset is not None and image_asset.path is not None:
+            self._render_asset(image_asset, pos)
+
+        if text is not None:
+            self._render_text(text, pos)
+
+        if line is not None:
+            self._render_line(line)
 
     def compose(self, objects: list[RenderedObject]):
         # main game area
