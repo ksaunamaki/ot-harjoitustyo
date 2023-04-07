@@ -4,7 +4,7 @@ from primitives.size import Size
 from primitives.interfaces import RenderedObject
 from entities.board_piece import BoardPiece, BoardPieceType
 from entities.ui.board_grid_item import BoardGridItem
-from entities.board import Gameboard
+from entities.board import Gameboard, GameboardConfiguration, GameState
 
 
 class TestGameboard(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_create_level2_board_with_random_planes(self):
         level = 2
@@ -37,7 +37,7 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_create_level3_board_with_random_planes(self):
         level = 3
@@ -51,7 +51,7 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_create_level4_board_with_random_planes(self):
         level = 4
@@ -65,7 +65,7 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_create_level5_board_with_random_planes(self):
         level = 5
@@ -79,7 +79,7 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_create_level6_board_with_random_planes(self):
         level = 6
@@ -93,24 +93,24 @@ class TestGameboard(unittest.TestCase):
             if piece.get_type() == BoardPieceType.PLANE:
                 planes += 1
 
-        self.assertEqual(planes, Gameboard.LEVELS[level][1])
+        self.assertEqual(planes, GameboardConfiguration.LEVELS[level][1])
 
     def test_incorrect_levels_not_accepted(self):
         with self.assertRaises(ValueError):
-            Gameboard(min(Gameboard.LEVELS.keys())-1)
+            Gameboard(min(GameboardConfiguration.LEVELS.keys())-1)
         with self.assertRaises(ValueError):
-            Gameboard(max(Gameboard.LEVELS.keys())+1)
+            Gameboard(max(GameboardConfiguration.LEVELS.keys())+1)
 
     def test_correct_reported_number_of_planes(self):
-        for level in Gameboard.LEVELS.keys():
-            planes = Gameboard.LEVELS[level][1]
+        for level in GameboardConfiguration.LEVELS.keys():
+            planes = GameboardConfiguration.LEVELS[level][1]
             board = Gameboard(level)
             board.create()
 
             self.assertEqual(planes, board.get_total_planes())
     
     def test_correct_reported_level(self):
-        for level in Gameboard.LEVELS.keys():
+        for level in GameboardConfiguration.LEVELS.keys():
             board = Gameboard(level)
             board.create()
 
@@ -134,7 +134,7 @@ class TestGameboard(unittest.TestCase):
             else:
                 board.open_piece(pos)
 
-        self.assertEqual(board.game_end_result(), True)
+        self.assertEqual(board.get_current_game_state(), GameState.WON)
 
     def test_open_plane_piece_first_recreates_pieces(self):
         board = Gameboard(5)
@@ -152,7 +152,7 @@ class TestGameboard(unittest.TestCase):
                 board.open_piece(pos)
                 break
 
-        self.assertEqual(board.game_end_result(), None)
+        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
 
     def test_open_plane_piece_cause_losing(self):
         board = Gameboard(6)
@@ -180,7 +180,7 @@ class TestGameboard(unittest.TestCase):
                 board.open_piece(pos)
                 break
 
-        self.assertEqual(board.game_end_result(), False)
+        self.assertEqual(board.get_current_game_state(), GameState.LOST)
 
     def test_losing_does_not_allow_further_open_or_mark(self):
         board = Gameboard(6)
@@ -235,19 +235,19 @@ class TestGameboard(unittest.TestCase):
             if piece_type == BoardPieceType.PLANE:
                 board.mark_piece(pos)
 
-                self.assertEqual(board.game_end_result(), None)
+                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
                 self.assertEqual(piece.is_marked(), True)
                 self.assertEqual(piece.is_open(), False)
 
                 board.mark_piece(pos)
 
-                self.assertEqual(board.game_end_result(), None)
+                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
                 self.assertEqual(piece.is_marked(), False)
                 self.assertEqual(piece.is_open(), False)
 
                 break
 
-        self.assertEqual(board.game_end_result(), None)
+        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
 
     def test_opening_marked_piece_is_prevented(self):
         board = Gameboard(3)
@@ -262,13 +262,13 @@ class TestGameboard(unittest.TestCase):
                 board.mark_piece(pos)
                 board.open_piece(pos)
 
-                self.assertEqual(board.game_end_result(), None)
+                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
                 self.assertEqual(piece.is_marked(), True)
                 self.assertEqual(piece.is_open(), False)
 
                 break
 
-        self.assertEqual(board.game_end_result(), None)
+        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
 
     def test_radar_marks_cannot_exceed_plane_count(self):
         board = Gameboard(5)
@@ -314,13 +314,13 @@ class TestGameboard(unittest.TestCase):
 
         # bottom-right corner piece
 
-        event_position = Position(50 + (board._xsize * piece_dimensions.width) - piece_dimensions.width // 2, 
-                                  50 + (board._ysize * piece_dimensions.height) - piece_dimensions.height // 2)
+        event_position = Position(50 + (board._configuration.size.width * piece_dimensions.width) - piece_dimensions.width // 2, 
+                                  50 + (board._configuration.size.height * piece_dimensions.height) - piece_dimensions.height // 2)
         
         piece_position = board.translate_event_position_to_piece_position(event_position)
 
-        self.assertEqual(piece_position.x, board._xsize - 1)
-        self.assertEqual(piece_position.y, board._ysize - 1)
+        self.assertEqual(piece_position.x, board._configuration.size.width - 1)
+        self.assertEqual(piece_position.y, board._configuration.size.height - 1)
 
     def test_outside_event_position_translation_returns_none(self):
         board = Gameboard(4)
@@ -345,8 +345,8 @@ class TestGameboard(unittest.TestCase):
 
         # outside right boundary
 
-        event_position = Position(50 + (board._xsize * piece_dimensions.width) + piece_dimensions.width // 2, 
-                                  50 + (board._ysize * piece_dimensions.height) - piece_dimensions.height // 2)
+        event_position = Position(50 + (board._configuration.size.width * piece_dimensions.width) + piece_dimensions.width // 2, 
+                                  50 + (board._configuration.size.height * piece_dimensions.height) - piece_dimensions.height // 2)
         
         piece_position = board.translate_event_position_to_piece_position(event_position)
 
@@ -354,8 +354,8 @@ class TestGameboard(unittest.TestCase):
 
         # outside bottom boundary
 
-        event_position = Position(50 + (board._xsize * piece_dimensions.width) - piece_dimensions.width // 2, 
-                                  50 + (board._ysize * piece_dimensions.height) + piece_dimensions.height // 2)
+        event_position = Position(50 + (board._configuration.size.width * piece_dimensions.width) - piece_dimensions.width // 2, 
+                                  50 + (board._configuration.size.height * piece_dimensions.height) + piece_dimensions.height // 2)
         
         piece_position = board.translate_event_position_to_piece_position(event_position)
 
@@ -377,13 +377,13 @@ class TestGameboard(unittest.TestCase):
                 grid_lines += 1
 
         # width x height pieces for board
-        self.assertEqual(pieces, board._ysize * board._xsize)
+        self.assertEqual(pieces, board._configuration.size.width * board._configuration.size.height)
 
         # width+1 + height+1 grid lines for board
-        self.assertEqual(grid_lines, board._ysize + 1 + board._xsize + 1)
+        self.assertEqual(grid_lines, board._configuration.size.width + 1 + board._configuration.size.height + 1)
 
     def test_returns_correct_piece_dimensions(self):
-        for level in Gameboard.LEVELS.keys():
+        for level in GameboardConfiguration.LEVELS.keys():
             board = Gameboard(level)
             board.create()
 
@@ -394,7 +394,7 @@ class TestGameboard(unittest.TestCase):
             self.assertEqual(piece_size, Size(in_pixels, in_pixels))
 
     def test_pieces_are_creted_in_correct_size(self):
-        for level in Gameboard.LEVELS.keys():
+        for level in GameboardConfiguration.LEVELS.keys():
             board = Gameboard(level)
             board.create()
 

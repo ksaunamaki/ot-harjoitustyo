@@ -23,7 +23,12 @@ class VisitedStackItem:
         self.item_processed: bool = item_processed
         self.is_empty: bool = is_empty
 
-class Gameboard:
+class GameState:
+    RUNNING = 0
+    WON = 1
+    LOST = 2
+
+class GameboardConfiguration:
     LEVELS = {
         1: [(5, 5), 3],
         2: [(9, 9), 19],
@@ -34,19 +39,34 @@ class Gameboard:
     }
 
     def __init__(self, level: int):
+        self._level: int = level
+        self._size: Size = Size(GameboardConfiguration.LEVELS[level][0][0],
+                          GameboardConfiguration.LEVELS[level][0][1])
+        self._planes: int = GameboardConfiguration.LEVELS[level][1]
+
+    @property
+    def level(self) -> int:
+        return self._level
+
+    @property
+    def size(self) -> Size:
+        return self._size
+
+    @property
+    def planes(self) -> int:
+        return self._planes
+
+class Gameboard:
+    def __init__(self, level: int):
         if level < 1 or level > 6:
             raise ValueError()
 
-        self._level = level
-        self._won = False
-        self._lost = False
-        self._xsize: int = Gameboard.LEVELS[level][0][0]
-        self._ysize: int = Gameboard.LEVELS[level][0][1]
+        self._configuration = GameboardConfiguration(level)
+        self._state = GameState.RUNNING
         self._offset: Position = Position(0,0)
-        self._planes: int = Gameboard.LEVELS[level][1]
-        self._pieces: list[BoardPiece] = [None] * (self._xsize * self._ysize)
+        self._pieces: list[BoardPiece] = [None] *\
+            (self._configuration.size.width * self._configuration.size.height)
         self._grid_lines: list[BoardGridItem] = None
-        self._max_recursion_depth = self._xsize + self._ysize
 
         self._piece_size = BoardPieceSize.MEDIUM
 
@@ -57,11 +77,11 @@ class Gameboard:
             self._piece_size = BoardPieceSize.SMALL
 
     def _get_index_from_position(self, position: Position) -> int:
-        return position.y * self._xsize + position.x
+        return position.y * self._configuration.size.width + position.x
 
     def _get_position_from_index(self, index) -> Position:
-        y_pos = index // self._xsize
-        x_pos = index - (y_pos * self._xsize)
+        y_pos = index // self._configuration.size.width
+        x_pos = index - (y_pos * self._configuration.size.width)
 
         return Position(x_pos, y_pos)
 
@@ -78,8 +98,8 @@ class Gameboard:
                             (position.x-1, position.y),
                             (position.x-1, position.y-1)
                             ]:
-            if x_pos < 0 or x_pos > self._xsize-1 or \
-                y_pos < 0 or y_pos > self._ysize-1:
+            if x_pos < 0 or x_pos > self._configuration.size.width-1 or \
+                y_pos < 0 or y_pos > self._configuration.size.height-1:
                 continue
 
             new_pos = Position(x_pos, y_pos)
@@ -137,13 +157,14 @@ class Gameboard:
 
         piece_pixels = self._get_piece_in_pixels()
 
-        if event_x > piece_pixels * self._xsize or event_y > piece_pixels * self._ysize:
+        if event_x > piece_pixels * self._configuration.size.width or\
+            event_y > piece_pixels * self._configuration.size.height:
             return None  # out of bounds
 
         x_pos = event_x // piece_pixels
         y_pos = event_y // piece_pixels
 
-        if x_pos >= self._xsize or y_pos >= self._ysize:
+        if x_pos >= self._configuration.size.width or y_pos >= self._configuration.size.height:
             return None  # out of bounds
 
         return Position(x_pos, y_pos)
@@ -151,13 +172,14 @@ class Gameboard:
     def create(self, randomize_planes: bool = True):
         # Initialize new game board
         plane_indexes = []
-        self._pieces: list[BoardPiece] = [None] * (self._xsize * self._ysize)
+        self._pieces: list[BoardPiece] = [None] *\
+            (self._configuration.size.width * self._configuration.size.height)
         piece_in_pixels = self._get_piece_in_pixels()
 
         total_pieces = len(self._pieces)
 
         if randomize_planes:
-            plane_indexes = random.sample(range(0, total_pieces), self._planes)
+            plane_indexes = random.sample(range(0, total_pieces), self._configuration.planes)
 
         for index in plane_indexes:
             position = self._get_position_from_index(index)
@@ -189,8 +211,8 @@ class Gameboard:
 
         pixels = self._get_piece_in_pixels()
 
-        width = pixels * self._xsize
-        height = pixels * self._ysize
+        width = pixels * self._configuration.size.width
+        height = pixels * self._configuration.size.height
 
         color = (100, 100, 100)
 
@@ -207,7 +229,7 @@ class Gameboard:
                 color))
 
     def get_level(self) -> int:
-        return self._level
+        return self._configuration.level
 
     def get_rendering_items(self) -> list[RenderedObject]:
         items: list(RenderedObject) = []
@@ -224,7 +246,7 @@ class Gameboard:
         return items
 
     def get_total_planes(self) -> int:
-        return self._planes
+        return self._configuration.planes
 
     def get_radar_contacts(self) -> int:
         marked = 0
@@ -235,8 +257,8 @@ class Gameboard:
         return marked
 
     def get_dimensions(self) -> Size:
-        return Size(self._xsize * self._get_piece_in_pixels(),
-                self._ysize * self._get_piece_in_pixels())
+        return Size(self._configuration.size.width * self._get_piece_in_pixels(),
+                self._configuration.size.height * self._get_piece_in_pixels())
 
     def get_piece_dimensions(self) -> Size:
         pixels = self._get_piece_in_pixels()
@@ -304,7 +326,7 @@ class Gameboard:
             if not piece.is_open() and not piece.is_marked():
                 return
 
-        self._won = True
+        self._state = GameState.WON
 
     def _open_piece(self, piece: BoardPiece, position: Position):
         if piece.is_open() or piece.is_marked():
@@ -320,7 +342,7 @@ class Gameboard:
             is_first = self._is_first_open()
 
             if not is_first:
-                self._lost = True
+                self._state = GameState.LOST
                 return
 
             while not result:
@@ -335,7 +357,7 @@ class Gameboard:
         self._check_for_win()
 
     def open_piece(self, position: Position):
-        if self._won or self._lost:
+        if self._state in (GameState.WON, GameState.LOST):
             return
 
         index = self._get_index_from_position(position)
@@ -345,7 +367,7 @@ class Gameboard:
         self._open_piece(piece, position)
 
     def mark_piece(self, position: Position):
-        if self._won or self._lost:
+        if self._state in (GameState.WON, GameState.LOST):
             return
 
         index = self._get_index_from_position(position)
@@ -361,18 +383,12 @@ class Gameboard:
             return
 
         # check if radar contacts are full
-        if self.get_radar_contacts() >= self._planes:
+        if self.get_radar_contacts() >= self._configuration.planes:
             return
 
         piece.mark()
 
         self._check_for_win()
 
-    def game_end_result(self) -> bool:
-        if self._won:
-            return True
-
-        if self._lost:
-            return False
-
-        return None
+    def get_current_game_state(self) -> GameState:
+        return self._state
