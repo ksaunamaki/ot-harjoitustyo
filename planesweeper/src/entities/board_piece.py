@@ -11,7 +11,6 @@ class BoardPieceType(Enum):
     PLANE = 1
     NUMBER = 2
 
-
 class BoardPiece(RenderedObject):
     cached_assets = {}
 

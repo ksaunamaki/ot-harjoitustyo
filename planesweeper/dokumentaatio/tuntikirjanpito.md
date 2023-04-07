@@ -9,4 +9,5 @@
 | 31.3. |  4h | Perusrungon toteutus, testaus |
 | 1.4. |  1h | Dokumentaation päivitys |
 | 4.4. |  2h | Koodin siivousta ja refactorointia pylintin perusteella |
-| Yhteensä | 22h |           |
+| 5.4. |  3h | Refactorointia ja bugifixejä |
+| Yhteensä | 25h |           |

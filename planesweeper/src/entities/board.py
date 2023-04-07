@@ -5,7 +5,7 @@ from primitives.interfaces import RenderedObject
 from primitives.position import Position
 from primitives.size import Size
 from entities.board_piece import BoardPiece, BoardPieceType
-from entities.board_grid_item import BoardGridItem
+from entities.ui.board_grid_item import BoardGridItem
 
 
 class BoardPieceSize(Enum):
