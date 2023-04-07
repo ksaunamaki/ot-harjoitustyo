@@ -2,7 +2,7 @@ from primitives.interfaces import RenderedObject, Renderer, EventsCore
 from primitives.game_state import GameState
 from primitives.game_initialization import GameInitialization
 from primitives.state_transition import StateTransition
-from entities.board import Gameboard
+from entities.board import Gameboard, BoardState
 from entities.ui.status_item import StatusItem
 from entities.ui.world_background import WorldBackground
 from services.events_handling_service import EventsHandlingService
@@ -79,13 +79,13 @@ class CoreLoop:
 
             # check for game end
             if state != GameState.GAME_OVER:
-                game_result = game.game_end_result()
+                game_result = game.get_current_board_state()
 
-                if game_result is not None and game_result:
+                if game_result == BoardState.WON:
                     self._renderer.set_won_state()
                     break
 
-                if game_result is not None and not game_result:
+                if game_result == BoardState.LOST:
                     self._renderer.set_lost_state()
                     break
 

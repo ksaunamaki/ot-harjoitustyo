@@ -4,7 +4,7 @@ from primitives.size import Size
 from primitives.interfaces import RenderedObject
 from entities.board_piece import BoardPiece, BoardPieceType
 from entities.ui.board_grid_item import BoardGridItem
-from entities.board import Gameboard, GameboardConfiguration, GameState
+from entities.board import Gameboard, GameboardConfiguration, BoardState
 
 
 class TestGameboard(unittest.TestCase):
@@ -134,7 +134,7 @@ class TestGameboard(unittest.TestCase):
             else:
                 board.open_piece(pos)
 
-        self.assertEqual(board.get_current_game_state(), GameState.WON)
+        self.assertEqual(board.get_current_board_state(), BoardState.WON)
 
     def test_open_plane_piece_first_recreates_pieces(self):
         board = Gameboard(5)
@@ -152,7 +152,7 @@ class TestGameboard(unittest.TestCase):
                 board.open_piece(pos)
                 break
 
-        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+        self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
 
     def test_open_plane_piece_cause_losing(self):
         board = Gameboard(6)
@@ -180,7 +180,7 @@ class TestGameboard(unittest.TestCase):
                 board.open_piece(pos)
                 break
 
-        self.assertEqual(board.get_current_game_state(), GameState.LOST)
+        self.assertEqual(board.get_current_board_state(), BoardState.LOST)
 
     def test_losing_does_not_allow_further_open_or_mark(self):
         board = Gameboard(6)
@@ -235,19 +235,19 @@ class TestGameboard(unittest.TestCase):
             if piece_type == BoardPieceType.PLANE:
                 board.mark_piece(pos)
 
-                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+                self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
                 self.assertEqual(piece.is_marked(), True)
                 self.assertEqual(piece.is_open(), False)
 
                 board.mark_piece(pos)
 
-                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+                self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
                 self.assertEqual(piece.is_marked(), False)
                 self.assertEqual(piece.is_open(), False)
 
                 break
 
-        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+        self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
 
     def test_opening_marked_piece_is_prevented(self):
         board = Gameboard(3)
@@ -262,13 +262,13 @@ class TestGameboard(unittest.TestCase):
                 board.mark_piece(pos)
                 board.open_piece(pos)
 
-                self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+                self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
                 self.assertEqual(piece.is_marked(), True)
                 self.assertEqual(piece.is_open(), False)
 
                 break
 
-        self.assertEqual(board.get_current_game_state(), GameState.RUNNING)
+        self.assertEqual(board.get_current_board_state(), BoardState.RUNNING)
 
     def test_radar_marks_cannot_exceed_plane_count(self):
         board = Gameboard(5)

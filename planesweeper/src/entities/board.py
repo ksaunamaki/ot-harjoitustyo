@@ -23,7 +23,7 @@ class VisitedStackItem:
         self.item_processed: bool = item_processed
         self.is_empty: bool = is_empty
 
-class GameState:
+class BoardState:
     RUNNING = 0
     WON = 1
     LOST = 2
@@ -62,7 +62,7 @@ class Gameboard:
             raise ValueError()
 
         self._configuration = GameboardConfiguration(level)
-        self._state = GameState.RUNNING
+        self._state = BoardState.RUNNING
         self._offset: Position = Position(0,0)
         self._pieces: list[BoardPiece] = [None] *\
             (self._configuration.size.width * self._configuration.size.height)
@@ -326,7 +326,7 @@ class Gameboard:
             if not piece.is_open() and not piece.is_marked():
                 return
 
-        self._state = GameState.WON
+        self._state = BoardState.WON
 
     def _open_piece(self, piece: BoardPiece, position: Position):
         if piece.is_open() or piece.is_marked():
@@ -342,7 +342,7 @@ class Gameboard:
             is_first = self._is_first_open()
 
             if not is_first:
-                self._state = GameState.LOST
+                self._state = BoardState.LOST
                 return
 
             while not result:
@@ -357,7 +357,7 @@ class Gameboard:
         self._check_for_win()
 
     def open_piece(self, position: Position):
-        if self._state in (GameState.WON, GameState.LOST):
+        if self._state in (BoardState.WON, BoardState.LOST):
             return
 
         index = self._get_index_from_position(position)
@@ -367,7 +367,7 @@ class Gameboard:
         self._open_piece(piece, position)
 
     def mark_piece(self, position: Position):
-        if self._state in (GameState.WON, GameState.LOST):
+        if self._state in (BoardState.WON, BoardState.LOST):
             return
 
         index = self._get_index_from_position(position)
@@ -390,5 +390,5 @@ class Gameboard:
 
         self._check_for_win()
 
-    def get_current_game_state(self) -> GameState:
+    def get_current_board_state(self) -> BoardState:
         return self._state

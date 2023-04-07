@@ -37,6 +37,15 @@ class EventsHandlingService:
 
         return next_state
 
+    def _process_mouse_click_event(self, event: EventType,
+                                 pos: Position,
+                                 game: Gameboard) -> StateTransition:
+
+        if event == EventType.LEFT_CLICK:
+            return self._process_mouse_left_click_event(pos, game)
+
+        return self._process_mouse_right_click_event(pos, game)
+
     def _process_new_game_event(self, existing_game: Gameboard,
                                 level: int = 1, single_game_mode = True) -> StateTransition:
         new_game: GameInitialization = None
@@ -92,10 +101,7 @@ class EventsHandlingService:
                 next_state = StateTransition(GameState.EXIT)
 
             if event in (EventType.LEFT_CLICK, EventType.RIGHT_CLICK):
-                next_state = self._process_mouse_left_click_event(pos, game)
-
-            if event == EventType.RIGHT_CLICK:
-                next_state = self._process_mouse_right_click_event(pos, game)
+                next_state = self._process_mouse_click_event(event, pos, game)
 
             if event in (EventType.NEW_GAME,
                          EventType.CHANGE_LEVEL_1,

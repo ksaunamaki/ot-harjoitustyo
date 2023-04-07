@@ -13,9 +13,9 @@ class WorldBackground(RenderedObject):
     def __init__(self, renderer: Renderer = None):
         super().__init__(Position(0,0), renderer)
 
-        if renderer is not None:
-            text = "New game: Alt+N, new game with level: Alt+[1-6]"
-            self._text = TextObject(text, Position(5, renderer.get_play_area_size().height-20))
+        #if renderer is not None:
+        #    text = "New game: Alt+N, new game with level: Alt+[1-6]"
+        #    self._text = TextObject(text, Position(5, renderer.get_play_area_size().height-20))
 
     def position_board_on_world(self, board: Gameboard):
         dimensions = board.get_dimensions()
