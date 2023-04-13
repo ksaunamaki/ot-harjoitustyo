@@ -11,7 +11,7 @@ class WorldBackground(RenderedObject):
     HEIGHT = 450
 
     def __init__(self, renderer: Renderer = None):
-        super().__init__(Position(0,0), renderer)
+        super().__init__(Position(0,0), -1000, renderer)
 
         #if renderer is not None:
         #    text = "New game: Alt+N, new game with level: Alt+[1-6]"

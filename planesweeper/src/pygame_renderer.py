@@ -2,6 +2,7 @@ import pygame
 from primitives.interfaces import Renderer, RenderedObject, Asset
 from primitives.position import Position
 from primitives.size import Size
+from primitives.color import Color
 from primitives.text_object import TextObject
 from services.asset_service import AssetService
 
@@ -9,6 +10,7 @@ from services.asset_service import AssetService
 class PygameRenderer(Renderer):
     _loaded_images = {}
     _fonts = {}
+    _text_measurement_cache = {}
     _status_font: pygame.font.Font = None
     _status_colors = {
         "game": pygame.Color(0, 0, 0),
@@ -70,6 +72,17 @@ class PygameRenderer(Renderer):
 
         return font
 
+    def _get_rendered_text(self, text_object: TextObject) -> pygame.Surface:
+        font = self._get_font_for_text(text_object.get_size())
+        color = text_object.get_color()
+
+        return font.render(text_object.get_text(),
+                                    True,
+                                    pygame.Color(color.rgb_r,
+                                                 color.rgb_g,
+                                                 color.rgb_b,
+                                                 color.alpha * 255))
+
     def _render_asset(self, asset: Asset, pos: Position):
         if asset.key not in self._loaded_images:
             self._loaded_images[asset.key] = pygame.image.load(asset.path)
@@ -78,15 +91,7 @@ class PygameRenderer(Renderer):
 
     def _render_text(self, text_object: TextObject, pos: Position):
         relative_pos = text_object.get_position()
-        font = self._get_font_for_text(text_object.get_size())
-        color = text_object.get_color()
-
-        rendered_text = font.render(text_object.get_text(),
-                                    True,
-                                    pygame.Color(color.rgb_r,
-                                                 color.rgb_g,
-                                                 color.rgb_b,
-                                                 color.alpha * 255))
+        rendered_text = self._get_rendered_text(text_object)
 
         text_x = pos.x
         text_y = pos.y
@@ -111,12 +116,38 @@ class PygameRenderer(Renderer):
                             (line[0].x, line[0].y),
                                 (line[1].x, line[1].y))
 
+    def _render_background(self, position: Position,
+                           size: Size, color: Color):
+        if color is None:
+            color = Color(255,255,255)
+
+        if color.alpha < 255:
+            # pygame.draw doesn't support alpha, must workaround
+            alpha_surface = pygame.Surface((size.width, size.height), pygame.SRCALPHA)
+            alpha_surface.fill(pygame.Color(
+                                color.rgb_r,
+                                color.rgb_g,
+                                color.rgb_b,
+                                int(color.alpha * 255)))
+            self._screen.blit(alpha_surface, (position.x, position.y))
+            return
+
+        pygame.draw.rect(self._screen,
+                         pygame.Color(color.rgb_r,
+                            color.rgb_g,
+                            color.rgb_b),
+                        pygame.Rect(position.x, position.y, size.width, size.height))
+
     def _render_item(self, obj: RenderedObject):
+        background_size = obj.get_background_size()
         image_asset = obj.get_asset()
         text = obj.get_text()
         line = obj.get_line()
 
         pos = self._calculate_positioning(obj.get_position())
+
+        if background_size is not None:
+            self._render_background(pos, background_size, obj.get_background_color())
 
         if image_asset is not None and image_asset.path is not None:
             self._render_asset(image_asset, pos)
@@ -131,6 +162,8 @@ class PygameRenderer(Renderer):
         # main game area
         self._screen.fill(self._current_status_color)
 
+        objects.sort(key=lambda rendered_object: rendered_object.get_z_order())
+
         # all objects
         for obj in objects:
             self._render_item(obj)
@@ -140,6 +173,9 @@ class PygameRenderer(Renderer):
     def tick(self):
         self._clock.tick(self._fps)
 
+    def get_fps(self) -> int:
+        return self._fps
+
     def set_game_state(self):
         self._current_status_color = self._status_colors["game"]
 
@@ -148,3 +184,21 @@ class PygameRenderer(Renderer):
 
     def set_lost_state(self):
         self._current_status_color = self._status_colors["lost"]
+
+    def measure_text_dimensions(self, text_object: TextObject) -> Size:
+        if text_object is None:
+            return None
+
+        text = text_object.get_text()
+        text_size = text_object.get_size()
+        cache_key = (text, text_size)
+        measured_size: Size = None
+
+        if cache_key not in self._text_measurement_cache:
+            rendered_text = self._get_rendered_text(text_object)
+            measured_size = Size(rendered_text.get_width(), rendered_text.get_height())
+            self._text_measurement_cache[cache_key] = measured_size
+        else:
+            measured_size = self._text_measurement_cache[cache_key]
+
+        return measured_size

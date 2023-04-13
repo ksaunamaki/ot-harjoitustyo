@@ -1,7 +1,4 @@
 from primitives.interfaces import RenderedObject
-from primitives.position import Position
-from primitives.size import Size
-from primitives.color import Color
 from primitives.text_object import TextObject
 
 

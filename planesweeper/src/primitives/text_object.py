@@ -5,6 +5,9 @@ from primitives.color import Color
 class TextObject:
     def __init__(self, text: str, pos: Position,
                  size: int = 11, color: Color = Color(0,0,0)):
+        if text is None:
+            text = ""
+
         self._text = text
         self._position: Position = pos
         self._size: int = size
@@ -21,3 +24,9 @@ class TextObject:
 
     def get_color(self) -> Color:
         return self._color
+
+    def append_text(self, appended_text: str):
+        self._text += appended_text
+
+    def truncate_text(self, by_characters: int):
+        self._text = self._text[0:-by_characters]

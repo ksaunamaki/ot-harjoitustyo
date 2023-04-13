@@ -1,6 +1,7 @@
 from enum import Enum
 from collections import deque
 import random
+import time
 from primitives.interfaces import RenderedObject
 from primitives.position import Position
 from primitives.size import Size
@@ -63,6 +64,8 @@ class Gameboard:
 
         self._configuration = GameboardConfiguration(level)
         self._state = BoardState.RUNNING
+        self._start_time: float = None
+        self._stop_time: float = None
         self._offset: Position = Position(0,0)
         self._pieces: list[BoardPiece] = [None] *\
             (self._configuration.size.width * self._configuration.size.height)
@@ -327,6 +330,7 @@ class Gameboard:
                 return
 
         self._state = BoardState.WON
+        self._stop_clock()
 
     def _open_piece(self, piece: BoardPiece, position: Position):
         if piece.is_open() or piece.is_marked():
@@ -343,6 +347,7 @@ class Gameboard:
 
             if not is_first:
                 self._state = BoardState.LOST
+                self._stop_clock()
                 return
 
             while not result:
@@ -356,9 +361,19 @@ class Gameboard:
 
         self._check_for_win()
 
+    def _start_clock(self):
+        if self._start_time is None:
+            self._start_time = time.time()
+
+    def _stop_clock(self):
+        if self._stop_time is None:
+            self._stop_time = time.time()
+
     def open_piece(self, position: Position):
         if self._state in (BoardState.WON, BoardState.LOST):
             return
+
+        self._start_clock()
 
         index = self._get_index_from_position(position)
 
@@ -369,6 +384,8 @@ class Gameboard:
     def mark_piece(self, position: Position):
         if self._state in (BoardState.WON, BoardState.LOST):
             return
+
+        self._start_clock()
 
         index = self._get_index_from_position(position)
 
@@ -392,3 +409,12 @@ class Gameboard:
 
     def get_current_board_state(self) -> BoardState:
         return self._state
+
+    def get_elapsed_play_time(self) -> float:
+        if self._start_time is None:
+            return 0.0
+
+        if self._stop_time is None:
+            return time.time() - self._start_time
+
+        return self._stop_time-self._start_time

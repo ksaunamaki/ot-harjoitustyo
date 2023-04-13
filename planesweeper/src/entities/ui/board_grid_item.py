@@ -6,7 +6,7 @@ class BoardGridItem(RenderedObject):
 
     def __init__(self, start_pos: Position, end_pos: Position,
                   color: tuple[int, int, int]):
-        super().__init__(start_pos)
+        super().__init__(start_pos, -1)
         self._line_end = end_pos
         self._color = color
 

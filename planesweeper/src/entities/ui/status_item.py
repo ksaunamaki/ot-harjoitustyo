@@ -1,7 +1,6 @@
 from entities.ui.text_box import TextBox
 from primitives.interfaces import Renderer
 from primitives.position import Position
-from primitives.size import Size
 from primitives.color import Color
 from primitives.text_object import TextObject
 
