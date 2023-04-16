@@ -1,7 +1,6 @@
 import unittest
 from primitives.position import Position
 from primitives.size import Size
-from primitives.interfaces import RenderedObject
 from entities.board_piece import BoardPiece, BoardPieceType
 from entities.ui.board_grid_item import BoardGridItem
 from entities.board import Gameboard, GameboardConfiguration, BoardState

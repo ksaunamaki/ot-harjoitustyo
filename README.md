@@ -15,6 +15,7 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 ## Dokumentaatio
 
 - [Määrittelydokumentti](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/vaatimusmaarittely.md)
+- [Arkkitehtuuri](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/arkkithtuuri.md)
 - [Työaikakirjanpito](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/tuntikirjanpito.md)
 - [Changelog](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/changelog.md)
 
@@ -60,3 +61,7 @@ poetry run invoke coverage-report
 ## Kysymyksiä?
 
 Voit ottaa yhteyttä tekijään sähköpostilla [kalle.saunamaki@helsinki.fi](mailto:kalle.saunamaki@helsinki.fi).
+
+## Attributions
+
+**Game background image**: [Image by starline](https://www.freepik.com/free-vector/minimal-world-map-isolated-white-background-with-shadow_37148820.htm) on Freepik

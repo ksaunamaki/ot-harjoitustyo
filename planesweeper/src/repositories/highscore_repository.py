@@ -55,8 +55,37 @@ class HighScoreRepository:
         if len(current_highscores) >= 5:
             max_time = max(map(lambda x: x.time, current_highscores))
             if not self._database.remove_row_from_table("single_highscores",
-                                                      ("level", "time"),
-                                                      (level, max_time)):
+                                                      ["level", "time"],
+                                                      [level, max_time]):
                 return
 
         self._database.store_row_to_table("single_highscores", (level, time, initials))
+
+
+    def is_challenge_score_eligible(self, score: int):
+        # store high-score only if within 5 best
+        current_highscores = self.get_challenge_highscores()
+
+        if len(current_highscores) < 5:
+            return True
+
+        min_score = min(map(lambda x: x.score, current_highscores))
+        if min_score < score:
+            return True
+
+        return False
+
+    def store_challenge_highscore(self, score: int, initials: str):
+        if not self.is_challenge_score_eligible(score):
+            return
+
+        current_highscores = self.get_challenge_highscores()
+
+        if len(current_highscores) >= 5:
+            min_score = min(map(lambda x: x.score, current_highscores))
+            if not self._database.remove_row_from_table("challenge_highscores",
+                                                      ["score"],
+                                                      [min_score]):
+                return
+
+        self._database.store_row_to_table("challenge_highscores", (score, initials))

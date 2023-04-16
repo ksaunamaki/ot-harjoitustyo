@@ -14,13 +14,13 @@ Koska sovellus on peli, erityisiä käyttäjärooleja ei sovelluksessa ole vaan 
 
 Pelistä toteutetaan ensivaiheessa versio jossa on seuraavat toiminnallisuudet:
 
-- Vaihtuvakokoinen pelialue / vaikeustaso
-  - Ruudukon koko sekä koneiden määrä
+- Vaihtuvakokoinen pelialue / vaikeustaso - **tehty**
+  - Ruudukon koko sekä koneiden määrä - **tehty**
 - Kaksi pelitilaa: 
-  - Satunnaispeli yksittäiseen pikapeliin vapaasti valittavalla vaikeustasolla
+  - Satunnaispeli yksittäiseen pikapeliin vapaasti valittavalla vaikeustasolla - **tehty**
   - Haastemoodi, jossa edetään vaikeustasolta seuraavalle
     - Haastemoodissa kentän selvittämisen epäonnistuminen palauttaa aiemmalle tasolle ja läpäisy seuraavalle tasolle
-- Paikalliseen tietokantaan tallennettava high-score lista
+- Paikalliseen tietokantaan tallennettava high-score lista **tehty**
   - Pohjautuu vaikeustasoon ja pelialueen selvityksen kokonaisaikaan
 - Englanninkieliset tekstit
 

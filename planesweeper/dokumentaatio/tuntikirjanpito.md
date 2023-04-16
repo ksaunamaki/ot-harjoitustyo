@@ -11,4 +11,6 @@
 | 4.4. |  2h | Koodin siivousta ja refactorointia pylintin perusteella |
 | 5.4. |  3h | Refactorointia ja bugifixejä |
 | 7.4. |  3h | Refactorointia ja bugifixejä |
-| Yhteensä | 28h |           |
+| 13.4. |  4h | High-score listojen toteutusta |
+| 16.4. |  2h | Lisää testejä, luokkadiagrammi arkkitehtuuridokumenttiin |
+| Yhteensä | 34h |           |

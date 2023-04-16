@@ -9,3 +9,5 @@
 ## Viikko 4
 
 - Pelitasojen vaikeutta säädetty paremmin progressiivisemmaksi
+- Tasoon käytetyn peliajan kello lisätty
+- High-score listat toteutettu yksittäispeliin ja valmiiksi challenge-peliin

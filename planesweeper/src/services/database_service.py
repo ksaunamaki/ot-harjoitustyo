@@ -19,23 +19,25 @@ class DatabaseService:
             self._is_available = False
 
     def _initialize_database(self, database_path: str, create_as_new: bool):
-        is_new = not os.path.exists(database_path) or create_as_new
-
         try:
             self._connection = sqlite3.connect(database_path)
         except sqlite3.OperationalError:
             self._is_available = False
 
-        if is_new and self._is_available:
-            # initialixe as new database either for real or by request
+        if create_as_new and self._is_available:
+            # initialize as new database either for real or by request
             self._drop_existing_tables()
             self._initialize_tables()
 
         self._connection.row_factory = sqlite3.Row
 
-    def __init__(self, create_as_new = False, name = ".planesweeper.db"):
-        directory = os.path.dirname(__file__)
-        database_path = os.path.join(directory, "..", name)
+    def __init__(self, create_as_new = False, database_path = None):
+        if database_path is None:
+            name = ".planesweeper.db"
+            directory = os.path.dirname(__file__)
+            database_path = os.path.join(directory, "..", name)
+            if not os.path.exists(database_path):
+                create_as_new = True
 
         self._connection = None
         self._is_available = True
@@ -61,7 +63,7 @@ class DatabaseService:
 
         return data
 
-    def _get_value_placeholders(self, data: tuple) -> str:
+    def _get_value_placeholders(self, data: list) -> str:
         elements = len(data)
         if elements in self._value_placeholders:
             placeholders = self._value_placeholders[elements]
@@ -76,7 +78,7 @@ class DatabaseService:
 
         return self._value_placeholders[elements]
 
-    def _get_key_value_placeholders(self, keys: tuple) -> str:
+    def _get_key_value_placeholders(self, keys: list) -> str:
         placeholders = ""
 
         for key in keys:
@@ -84,7 +86,7 @@ class DatabaseService:
 
         return placeholders[0:-5]
 
-    def store_row_to_table(self, table: str, data: tuple) -> bool:
+    def store_row_to_table(self, table: str, data: list) -> bool:
         if not self._is_available:
             return False
 
@@ -98,7 +100,7 @@ class DatabaseService:
 
         return True
 
-    def remove_row_from_table(self, table: str, keys: tuple, values: tuple) -> bool:
+    def remove_row_from_table(self, table: str, keys: list, values: list) -> bool:
         if not self._is_available:
             return False
 

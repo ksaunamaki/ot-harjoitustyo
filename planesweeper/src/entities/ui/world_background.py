@@ -2,7 +2,6 @@ from entities.board import Gameboard
 from primitives.interfaces import Renderer, RenderedObject
 from primitives.position import Position
 from primitives.size import Size
-from primitives.text_object import TextObject
 from services.asset_service import AssetService
 
 
