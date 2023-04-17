@@ -15,7 +15,7 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 ## Dokumentaatio
 
 - [Määrittelydokumentti](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/vaatimusmaarittely.md)
-- [Arkkitehtuuri](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/arkkithtuuri.md)
+- [Arkkitehtuuri](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/arkkitehtuuri.md)
 - [Työaikakirjanpito](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/tuntikirjanpito.md)
 - [Changelog](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/changelog.md)
 

@@ -20,7 +20,7 @@ class CoreLoop:
         self._renderer = renderer
         self._highscores = HighScoreRepository(database)
         self._long_lived_elements = {}
-        self.events_handler = EventsHandlingService(events)
+        self._events_handler = EventsHandlingService(events)
 
         background = WorldBackground(renderer)
         self._long_lived_elements["background"] = background
@@ -152,7 +152,7 @@ class CoreLoop:
 
         while True:
             # events
-            transition = self.events_handler.process_events(GameState.INITIAL, None, None)
+            transition = self._events_handler.process_events(GameState.INITIAL, None, None)
 
             if transition is not None:
                 break
@@ -200,7 +200,7 @@ class CoreLoop:
 
         while True:
             # events
-            transition = self.events_handler.process_events(state, game_initialization, game)
+            transition = self._events_handler.process_events(state, game_initialization, game)
 
             # check for game end
             if transition is None and state != GameState.GAME_OVER:
@@ -271,7 +271,7 @@ class CoreLoop:
 
         while True:
             # events
-            transition = self.events_handler.process_events(
+            transition = self._events_handler.process_events(
                 state,
                 game_initialization, game,
                 input_buffer)
