@@ -14,5 +14,5 @@
 | 13.4. |  4h | High-score listojen toteutusta |
 | 16.4. |  2h | Lisää testejä, luokkadiagrammi arkkitehtuuridokumenttiin |
 | 21.4. |  4h | Pelimoodin valintaruutu |
-| 24.4. |  3h | Challenge pelin toteutus |
-| Yhteensä | 41h |           |
+| 24.4. |  5h | Challenge pelin toteutus, testien lisäys |
+| Yhteensä | 43h |           |
