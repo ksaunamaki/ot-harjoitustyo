@@ -452,15 +452,18 @@ class CoreLoop:
             # initialize new simple game board
             game = Gameboard(1)
             game.create()
-        else:
+        elif game_initialization.mode == GameMode.SINGLE_GAME:
             game = Gameboard(game_initialization.level)
             game.create()
-
-        if game_initialization.mode == GameMode.CHALLENGE_GAME:
+        else:
             if game_initialization.ongoing_progress is None:
                 progress = ChallengeGameProgress()
+                game = Gameboard(1)
             else:
                 progress = game_initialization.ongoing_progress
+                game = Gameboard(progress.current_level)
+
+            game.create()
 
         self._long_lived_elements["background"].position_board_on_world(game)
 
@@ -541,10 +544,10 @@ class CoreLoop:
 
         return (state, game_initialization, game, progress)
 
-    def run(self,
-            game_initialization: GameInitialization = None) -> bool:
+    def run(self) -> bool:
 
         game: Gameboard = None
+        game_initialization: GameInitialization = None
         state: GameState = GameState.INITIAL
         progress: ChallengeGameProgress = None
 
