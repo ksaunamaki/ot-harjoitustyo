@@ -1,4 +1,4 @@
-from primitives.game_state import GameState
+from primitives.game import GameState
 
 
 class StateTransition:

@@ -1,8 +1,9 @@
 import pygame
 from primitives.interfaces import Renderer, RenderedObject, Asset
 from primitives.position import Position
-from primitives.size import Size
+from primitives.border import Border
 from primitives.color import Color
+from primitives.size import Size
 from primitives.text_object import TextObject
 from services.asset_service import AssetService
 
@@ -37,26 +38,7 @@ class PygameRenderer(Renderer):
 
         self._current_status_color = self._status_colors["game"]
 
-    def _calculate_positioning(self, pos: Position, container_size: Size = None) -> Position:
-        actual_positioning = Position(pos.x, pos.y)
-
-        container_width = container_size.width\
-            if container_size is not None\
-            else Renderer.WINDOW_WIDTH
-
-        container_height = container_size.height\
-            if container_size is not None\
-            else Renderer.WINDOW_HEIGHT
-
-        if pos.x < 0:
-            # calculate from end of container
-            actual_positioning.x = container_width + pos.x
-
-        if pos.y < 0:
-            # calculate from bottom of container
-            actual_positioning.y = container_height + pos.y
-
-        return actual_positioning
+        self._last_cursor_is_hand = False
 
     def _get_font_for_text(self, font_size: int) -> pygame.font.Font:
         if font_size is None:
@@ -83,13 +65,13 @@ class PygameRenderer(Renderer):
                                                  color.rgb_b,
                                                  color.alpha * 255))
 
-    def _render_asset(self, asset: Asset, pos: Position):
+    def _render_asset(self, asset: Asset, pos: Position) -> pygame.Rect:
         if asset.key not in self._loaded_images:
             self._loaded_images[asset.key] = pygame.image.load(asset.path)
 
-        self._screen.blit(self._loaded_images[asset.key], (pos.x, pos.y))
+        return self._screen.blit(self._loaded_images[asset.key], (pos.x, pos.y))
 
-    def _render_text(self, text_object: TextObject, pos: Position):
+    def _render_text(self, text_object: TextObject, pos: Position) -> pygame.Rect:
         relative_pos = text_object.get_position()
         rendered_text = self._get_rendered_text(text_object)
 
@@ -108,7 +90,7 @@ class PygameRenderer(Renderer):
         else:
             text_y = pos.y + relative_pos.y
 
-        self._screen.blit(rendered_text, (text_x, text_y))
+        return self._screen.blit(rendered_text, (text_x, text_y))
 
     def _render_line(self, line: tuple[Position, Position, tuple[int, int, int]]):
         pygame.draw.line(self._screen,
@@ -116,8 +98,28 @@ class PygameRenderer(Renderer):
                             (line[0].x, line[0].y),
                                 (line[1].x, line[1].y))
 
+    def _render_border(self, position: Position,
+                       size: Size, border: Border):
+
+        points = [(position.x, position.y),
+                   (position.x + size.width, position.y),
+                   (position.x + size.width, position.y + size.height),
+                   (position.x, position.y + size.height)]
+
+        pygame.draw.lines(self._screen,
+                          (border.color.rgb_r,
+                           border.color.rgb_g,
+                           border.color.rgb_b),
+                           True,
+                           points,
+                           border.thickness)
+
     def _render_background(self, position: Position,
-                           size: Size, color: Color):
+                           size: Size, color: Color,
+                           border: Border) -> pygame.Rect:
+
+        rect = None
+
         if color is None:
             color = Color(255,255,255)
 
@@ -129,34 +131,69 @@ class PygameRenderer(Renderer):
                                 color.rgb_g,
                                 color.rgb_b,
                                 int(color.alpha * 255)))
-            self._screen.blit(alpha_surface, (position.x, position.y))
-            return
+            rect = self._screen.blit(alpha_surface, (position.x, position.y))
+        else:
+            rect = pygame.draw.rect(self._screen,
+                            pygame.Color(color.rgb_r,
+                                color.rgb_g,
+                                color.rgb_b),
+                            pygame.Rect(position.x, position.y, size.width, size.height))
 
-        pygame.draw.rect(self._screen,
-                         pygame.Color(color.rgb_r,
-                            color.rgb_g,
-                            color.rgb_b),
-                        pygame.Rect(position.x, position.y, size.width, size.height))
+        if border is not None:
+            self._render_border(position, size, border)
 
-    def _render_item(self, obj: RenderedObject):
+        return rect
+
+    def _is_mouse_over_rendered(self,
+                                obj_rect: pygame.Rect,
+                                mouse_pos: tuple[int,int]) -> bool:
+        mouse_x = mouse_pos[0]
+        mouse_y = mouse_pos[1]
+
+        obj_x = obj_rect[0]
+        obj_y = obj_rect[1]
+        obj_width = obj_rect[2]
+        obj_height = obj_rect[3]
+
+        if mouse_x < obj_x or\
+            mouse_x > obj_x + obj_width or\
+            mouse_y < obj_y or\
+            mouse_y > obj_y + obj_height:
+            return False
+
+        return True
+
+    def _render_item(self,
+                     obj: RenderedObject,
+                     mouse_pos: tuple[int,int]) -> bool:
         background_size = obj.get_background_size()
         image_asset = obj.get_asset()
         text = obj.get_text()
         line = obj.get_line()
+        rendered_rect = None
 
-        pos = self._calculate_positioning(obj.get_position())
+        pos = self.calculate_child_position(obj.get_position())
 
         if background_size is not None:
-            self._render_background(pos, background_size, obj.get_background_color())
+            rendered_rect = self._render_background(pos, background_size,
+                                    obj.get_background_color(),
+                                    obj.get_border())
 
         if image_asset is not None and image_asset.path is not None:
-            self._render_asset(image_asset, pos)
+            rendered_asset_rect = self._render_asset(image_asset, pos)
+            if rendered_rect is None:
+                rendered_rect = rendered_asset_rect
 
         if text is not None:
-            self._render_text(text, pos)
+            rendered_text_rect = self._render_text(text, pos)
+            if rendered_rect is None:
+                rendered_rect = rendered_text_rect
 
         if line is not None:
             self._render_line(line)
+
+        return self._is_mouse_over_rendered(rendered_rect, mouse_pos)\
+            if mouse_pos is not None and rendered_rect is not None else None
 
     def compose(self, objects: list[RenderedObject]):
         # main game area
@@ -164,9 +201,28 @@ class PygameRenderer(Renderer):
 
         objects.sort(key=lambda rendered_object: rendered_object.get_z_order())
 
+        # get cursor position
+        cursor_pos = pygame.mouse.get_pos() if pygame.mouse.get_focused() else None
+        over_object: RenderedObject = None
+
         # all objects
         for obj in objects:
-            self._render_item(obj)
+            if self._render_item(obj, cursor_pos):
+                over_object = obj
+
+        if over_object is not None:
+            if over_object.show_hand_cursor():
+                if not self._last_cursor_is_hand:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                    self._last_cursor_is_hand = True
+            else:
+                if self._last_cursor_is_hand:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                    self._last_cursor_is_hand = False
+        else:
+            if self._last_cursor_is_hand:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                self._last_cursor_is_hand = False
 
         pygame.display.flip()
 

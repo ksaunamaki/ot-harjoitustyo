@@ -11,3 +11,8 @@
 - Pelitasojen vaikeutta säädetty paremmin progressiivisemmaksi
 - Tasoon käytetyn peliajan kello lisätty
 - High-score listat toteutettu yksittäispeliin ja valmiiksi challenge-peliin
+
+## Viikko 5
+
+- Alkuvalintaruutu toteutettu pelimoodin valitsemiksi
+- Challenge -pelin mekaniikan implementointi

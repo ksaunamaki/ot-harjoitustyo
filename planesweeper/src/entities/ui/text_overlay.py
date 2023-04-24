@@ -2,6 +2,7 @@ from entities.ui.text_box import TextBox
 from primitives.interfaces import Renderer
 from primitives.position import Position
 from primitives.size import Size
+from primitives.border import Border
 from primitives.color import Color
 from primitives.text_object import TextObject
 
@@ -53,6 +54,7 @@ class TextOverlay(TextBox):
                  overlay_position: Position,
                  overlay_size: Size,
                  overlay_color: Color,
+                 border: Border,
                  renderer: Renderer):
         
         text = TextObject(text_to_show, text_offset, text_size, text_color)
@@ -62,6 +64,7 @@ class TextOverlay(TextBox):
         self._position = overlay_position
         self._background_size = overlay_size
         self._background_color = overlay_color
+        self._border = border
 
         self._clip =  self._get_clipping_size(text, len(text_to_show),
                                               overlay_size, text_offset.x, renderer)

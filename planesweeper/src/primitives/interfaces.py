@@ -1,8 +1,8 @@
 from primitives.asset import Asset
-from primitives.event_data import EventData
-from primitives.event_type import EventType
+from primitives.events import EventData, EventType
 from primitives.position import Position
 from primitives.size import Size
+from primitives.border import Border
 from primitives.color import Color
 from primitives.text_object import TextObject
 
@@ -52,6 +52,28 @@ class Renderer:
 
         return None
 
+    def calculate_child_position(self,
+                                 pos: Position,
+                                 container_size: Size = None) -> Position:
+        actual_positioning = Position(pos.x, pos.y)
+
+        container_width = container_size.width\
+            if container_size is not None\
+            else Renderer.WINDOW_WIDTH
+
+        container_height = container_size.height\
+            if container_size is not None\
+            else Renderer.WINDOW_HEIGHT
+
+        if pos.x < 0:
+            # calculate from end of container
+            actual_positioning.x = container_width + pos.x
+
+        if pos.y < 0:
+            # calculate from bottom of container
+            actual_positioning.y = container_height + pos.y
+
+        return actual_positioning
 
 class RenderedObject:
     def __init__(self,
@@ -62,7 +84,9 @@ class RenderedObject:
         self._text: TextObject = None
         self._background_size: Size = None
         self._background_color: Color = None
+        self._border: Border = None
         self._z_order: int = z_order
+        self._use_hand_cursor = False
         self._renderer = renderer
 
     def get_z_order(self) -> int:
@@ -80,6 +104,9 @@ class RenderedObject:
     def get_background_color(self) -> Color:
         return self._background_color
 
+    def get_border(self) -> Border:
+        return self._border
+
     def change_position(self, new_position: Position):
         self._position = Position(new_position.x, new_position.y)
 
@@ -88,6 +115,9 @@ class RenderedObject:
 
     def get_line(self) -> tuple[Position, Position, tuple[int, int, int]]:
         return None
+
+    def show_hand_cursor(self) -> bool:
+        return self._use_hand_cursor
 
 class EventsCore:
     def get(self) -> EventData:

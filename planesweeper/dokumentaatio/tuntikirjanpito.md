@@ -13,4 +13,6 @@
 | 7.4. |  3h | Refactorointia ja bugifixejä |
 | 13.4. |  4h | High-score listojen toteutusta |
 | 16.4. |  2h | Lisää testejä, luokkadiagrammi arkkitehtuuridokumenttiin |
-| Yhteensä | 34h |           |
+| 21.4. |  4h | Pelimoodin valintaruutu |
+| 24.4. |  3h | Challenge pelin toteutus |
+| Yhteensä | 41h |           |

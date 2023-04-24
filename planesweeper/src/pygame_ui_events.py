@@ -1,7 +1,6 @@
 import pygame
 from primitives.interfaces import EventsCore
-from primitives.event_type import EventType
-from primitives.event_data import EventData
+from primitives.events import EventData, EventType
 from primitives.position import Position
 
 
@@ -14,6 +13,10 @@ class PygameEvents(EventsCore):
                     (modifiers & pygame.KMOD_LSHIFT) or\
                     (modifiers & pygame.KMOD_RSHIFT)
 
+        if event.key == pygame.K_s and is_alt:
+            return EventData(EventType.NEW_SINGLE_GAME)
+        if event.key == pygame.K_c and is_alt:
+            return EventData(EventType. NEW_CHALLENGE_GAME)
         if event.key == pygame.K_n and is_alt:
             return EventData(EventType.NEW_GAME)
         if event.key == pygame.K_1 and is_alt:

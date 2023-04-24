@@ -45,6 +45,10 @@ class GameboardConfiguration:
                           GameboardConfiguration.LEVELS[level][0][1])
         self._planes: int = GameboardConfiguration.LEVELS[level][1]
 
+    @staticmethod
+    def get_max_level() -> int:
+        return max(GameboardConfiguration.LEVELS.keys())
+
     @property
     def level(self) -> int:
         return self._level
@@ -258,6 +262,10 @@ class Gameboard:
             marked += 1 if piece.is_marked() else 0
 
         return marked
+
+    def get_pieces_on_board(self) -> int:
+        return self._configuration.size.height *\
+                self._configuration.size.width
 
     def get_dimensions(self) -> Size:
         return Size(self._configuration.size.width * self._get_piece_in_pixels(),
