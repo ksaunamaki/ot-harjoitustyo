@@ -21,7 +21,9 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 
 ## Asennus / käyttöönotto
 
-Kun repository on kloonattu haluamaasi hakemistoon, suorita pakettien asentaminen Poetry:a käyttäen seuraavalla komennolla **planesweeper -hakemistossa**:
+Viimeisin vakaa versio lähdekoodista löytyy [Release / viikko 5](https://github.com/ksaunamaki/ot-harjoitustyo/releases/tag/viikko5) kohdan alta.
+
+Kun repository on kloonattu haluamaasi hakemistoon, suorita pakettien asentaminen (tai päivittäminen ajantasalle) Poetry:a käyttäen seuraavalla komennolla **planesweeper -hakemistossa**:
 
 ```bash
 poetry install
