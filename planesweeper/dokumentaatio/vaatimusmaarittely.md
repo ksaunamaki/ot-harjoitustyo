@@ -18,11 +18,11 @@ Pelistä toteutetaan ensivaiheessa versio jossa on seuraavat toiminnallisuudet:
   - Ruudukon koko sekä koneiden määrä - **tehty**
 - Kaksi pelitilaa: 
   - Satunnaispeli yksittäiseen pikapeliin vapaasti valittavalla vaikeustasolla - **tehty**
-  - Haastemoodi, jossa edetään vaikeustasolta seuraavalle
-    - Haastemoodissa kentän selvittämisen epäonnistuminen palauttaa aiemmalle tasolle ja läpäisy seuraavalle tasolle
+  - Haastemoodi, jossa edetään vaikeustasolta seuraavalle **tehty**
+    - Haastemoodissa kentän selvittämisen epäonnistuminen palauttaa aiemmalle tasolle ja läpäisy seuraavalle tasolle **tehty**
 - Paikalliseen tietokantaan tallennettava high-score lista **tehty**
-  - Pohjautuu vaikeustasoon ja pelialueen selvityksen kokonaisaikaan
-- Englanninkieliset tekstit
+  - Pohjautuu vaikeustasoon ja pelialueen selvityksen kokonaisaikaan **tehty**
+- Englanninkieliset tekstit **tehty**
 
 ## UI konseptikuva
 
