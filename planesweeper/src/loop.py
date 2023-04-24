@@ -345,11 +345,31 @@ class CoreLoop:
 
         return transition
 
+    def _store_initials(self,
+                        initials: str,
+                        game_initialization: GameInitialization,
+                        game: Gameboard,
+                        progress: ChallengeGameProgress) -> tuple[str, StateTransition]:
+        initials = initials[0:3]
+
+        if progress is None:
+            self._highscores.store_single_highscore(
+                game_initialization.level,
+                game.get_elapsed_play_time(),
+                initials)
+        else:
+            self._highscores.store_challenge_highscore(
+                progress.score,
+                initials)
+
+        return StateTransition(GameState.GAME_OVER)
+
     def _handle_initials_input(self,
                                input_buffer: InputBuffer,
                                initials: str,
                                game_initialization: GameInitialization,
-                               game: Gameboard) -> tuple[str, StateTransition]:
+                               game: Gameboard,
+                               progress: ChallengeGameProgress) -> tuple[str, StateTransition]:
         transition = None
         data = "".join(map(lambda c: c.upper(), input_buffer.read()))
 
@@ -372,20 +392,15 @@ class CoreLoop:
                 initials = initials[0:-1]
 
         if len(initials) >= 3:
-            initials = initials[0:3]
-            self._highscores.store_single_highscore(
-                game_initialization.level,
-                game.get_elapsed_play_time(),
-                initials)
-
-            transition = StateTransition(GameState.GAME_OVER)
+            transition = self._store_initials(initials, game_initialization, game, progress)
 
         return (initials, transition)
 
     def _run_get_initials(self,
                   state: GameState,
                   game_initialization: GameInitialization,
-                  game: Gameboard) -> StateTransition:
+                  game: Gameboard,
+                  progress: ChallengeGameProgress) -> StateTransition:
 
         transition: StateTransition = None
         initials = ""
@@ -405,7 +420,8 @@ class CoreLoop:
                     input_buffer,
                     initials,
                     game_initialization,
-                    game)
+                    game,
+                    progress)
 
             if transition is not None:
                 break
@@ -543,7 +559,7 @@ class CoreLoop:
             elif state in (GameState.RUN_GAME, GameState.GAME_OVER):
                 transition = self._run_game(state, game_initialization, game, progress)
             elif state == GameState.GET_INITIALS:
-                transition = self._run_get_initials(state, game_initialization, game)
+                transition = self._run_get_initials(state, game_initialization, game, progress)
             elif state == GameState.PROCESS_CHALLENGE_ROUND_RESULT:
                 transition = self._process_challenge_game_result(game, progress)
 
