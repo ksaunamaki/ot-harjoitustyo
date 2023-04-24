@@ -79,7 +79,7 @@ class CoreLoop:
 
         overlay = TextOverlay(game_over_text, 14, Position(5,10), Color(255,255,255),
                             Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(207,65,3, 0.7), None, self._renderer)
+                            Color(0,0,0), None, self._renderer)
 
         self._long_lived_elements["game_over_overlay"] = overlay
 
@@ -120,7 +120,7 @@ class CoreLoop:
 
         overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
                             Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(0,0,0), None, self._renderer)
+                            Color(207,65,3, 0.7), None, self._renderer)
 
         self._long_lived_elements["challenge_overlay"] = overlay
 
