@@ -26,7 +26,7 @@ class PygameRenderer(Renderer):
         pygame.init()
 
         if window_title is not None:
-            pygame.display.set_caption()
+            pygame.display.set_caption(window_title)
 
         icon = AssetService.get_asset("icon")
 

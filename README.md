@@ -14,6 +14,7 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 
 ## Dokumentaatio
 
+- [Käyttöohje](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/kayttoohje.md)
 - [Määrittelydokumentti](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/vaatimusmaarittely.md)
 - [Arkkitehtuuri](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/arkkitehtuuri.md)
 - [Työaikakirjanpito](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/tuntikirjanpito.md)
@@ -21,7 +22,7 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 
 ## Asennus / käyttöönotto
 
-Viimeisin vakaa versio lähdekoodista löytyy [Release / viikko 5](https://github.com/ksaunamaki/ot-harjoitustyo/releases/tag/viikko5) kohdan alta.
+Viimeisin vakaa versio lähdekoodista löytyy [Release / viikko 6](https://github.com/ksaunamaki/ot-harjoitustyo/releases/tag/viikko6) kohdan alta.
 
 Kun repository on kloonattu haluamaasi hakemistoon, suorita pakettien asentaminen (tai päivittäminen ajantasalle) Poetry:a käyttäen seuraavalla komennolla **planesweeper -hakemistossa**:
 

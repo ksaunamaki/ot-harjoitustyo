@@ -16,5 +16,5 @@
 | 21.4. |  4h | Pelimoodin valintaruutu |
 | 24.4. |  5h | Challenge pelin toteutus, testien lisäys |
 | 28.4. |  2h | Komentorivikäsittely, konfiguraatiorepository, testien lisäys |
-| 29.4. |  3h | Tekstiresurssien eriytys omaan luokkaan, suomenkielisen käännöksen lisääminen |
-| Yhteensä | 48h |           |
+| 29.4. |  4h | Tekstiresurssien eriytys omaan luokkaan, suomenkielisen käännöksen lisääminen, käyttöohjeen luonti |
+| Yhteensä | 49h |           |
