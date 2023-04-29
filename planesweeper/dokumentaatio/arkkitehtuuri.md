@@ -5,10 +5,14 @@
 ```mermaid
   classDiagram
        main -- "1" CoreLoop
+       CoreLoop -- "1" LanguageService
        CoreLoop -- "1" EventsHandlingService
+       CoreLoop -- "1" ConfigurationRepository
        CoreLoop -- "1" HighScoreRepository
+       LanguageService -- "*" LanguageResource
        EventsHandlingService -- "1" EventsCore
        EventsCore <-- PygameEvents
+       ConfigurationRepository -- "1" DatabaseService
        HighScoreRepository -- "1" DatabaseService
        CoreLoop -- "1" Renderer
        CoreLoop -- "1" Gameboard
@@ -80,6 +84,8 @@ BoardPiece pitää yllä omaa tilatietoa kyseisen ruudun senhetkisestä tilasta 
 ## Apuluokat
 
 Päärungon ulkopuolisina apupalveluina ovat:
-- HighScoreRepository -luokka, joka hoitaa DatabaseServicen avulla SQLite kirjaston kautta pelin high-score tulosten lukemisen ja persistoinnin tietokantaan.
-- AssetService -luokka, joka hoitaa kuva-assettien (taustakuva, pelilaudan kuvat) lataamisen levyltä kutsuvalle luokalle
+- ConfigurationRepository -luokka, joka hoitaa DatabaseServicen avulla SQLite kirjaston kautta yleisten konfigurointiasetusten lukemisen ja persistoinnin tietokantaan.
+- HighScoreRepository -luokka, joka hoitaa DatabaseServicen avulla pelin high-score tulosten lukemisen ja persistoinnin tietokantaan.
+- AssetService -luokka, joka hoitaa kuva-assettien (taustakuva, pelilaudan kuvat) lataamisen levyltä kutsuvalle luokalle.
 - EventsHandlingService -luokka, joka prosessoi näppäimistö/hiiri -syötteitä ja tarvittaessa pelin tilan mukaisesti mutatoi pelitilaa tai ohjaa tilakoneen siirtymiä.
+- LanguageService -luokka, joka toteuttaa tekstiresurssien hakemisen valitun kielen mukaisesti. LanguageServices luokka lataa käännöstaulukot omina kieliluokkina src/services/languages -hakemistosta ja kieliluokat toteuttavat LanguageResource rajapintaluokan. Uuden kielen lisääminen onnistuu helposti lisäämällä kielikohtaisen kieliluokkatiedoston, ja lisäämällä LanguageService luokkaan ko. kielen nimen IMPORT_LANGUAGES taulukkoon. Huom! Ohjelma olettaa valittavan kielen tunnisteen, jolla se valitaan, olevan kielen kaksi ensimmäistä kirjainta (Finnish = fi jne.)

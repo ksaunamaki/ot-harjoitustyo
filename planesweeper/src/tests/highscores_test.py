@@ -10,6 +10,7 @@ class TestHighscores(unittest.TestCase):
         self._database_service = DatabaseService(True, f"{self._test_dir}/TestHighscores")
 
     def tearDown(self):
+        self._database_service.close()
         shutil.rmtree(self._test_dir)
 
     def test_new_single_highscore_is_stored(self):

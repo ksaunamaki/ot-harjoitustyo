@@ -8,13 +8,18 @@ class DatabaseService:
         try:
             self._connection.execute("drop table if exists single_highscores;")
             self._connection.execute("drop table if exists challenge_highscores;")
+            self._connection.execute("drop table if exists configuration;")
         except sqlite3.OperationalError:
             self._is_available = False
 
     def _initialize_tables(self):
         try:
-            self._connection.execute("create table single_highscores(level, time, initials);")
-            self._connection.execute("create table challenge_highscores(score, initials);")
+            self._connection.execute(
+                "create table if not exists single_highscores(level, time, initials);")
+            self._connection.execute(
+                "create table if not exists challenge_highscores(score, initials);")
+            self._connection.execute(
+                "create table if not exists configuration(key, value);")
         except sqlite3.OperationalError:
             self._is_available = False
 
@@ -27,7 +32,8 @@ class DatabaseService:
         if create_as_new and self._is_available:
             # initialize as new database either for real or by request
             self._drop_existing_tables()
-            self._initialize_tables()
+
+        self._initialize_tables()
 
         self._connection.row_factory = sqlite3.Row
 
@@ -45,6 +51,10 @@ class DatabaseService:
 
         self._value_placeholders = {}
 
+    def close(self):
+        if self._connection is not None:
+            self._connection.close()
+
     def get_rows_from_table(self, table: str) -> list[sqlite3.Row]:
         data: list[sqlite3.Row] = []
 
@@ -53,6 +63,28 @@ class DatabaseService:
 
         try:
             results = self._connection.execute(f"select * from {table}")
+        except sqlite3.OperationalError:
+            return data
+
+        row = results.fetchone()
+        while row is not None:
+            data.append(row)
+            row = results.fetchone()
+
+        return data
+
+    def select_rows_from_table(self,
+                               table: str,
+                               column, value) -> list[sqlite3.Row]:
+        data: list[sqlite3.Row] = []
+
+        if not self._is_available:
+            return data
+
+        try:
+            results = self._connection.execute(
+                f"select * from {table} where {column} = ?",
+                [value])
         except sqlite3.OperationalError:
             return data
 

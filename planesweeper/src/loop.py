@@ -15,14 +15,20 @@ from entities.ui.world_background import WorldBackground
 from repositories.highscore_repository import HighScoreRepository
 from services.events_handling_service import EventsHandlingService, InputBuffer
 from services.database_service import DatabaseService
+from services.language_service import LanguageService
 
 
 class CoreLoop:
-    def __init__(self, renderer: Renderer, events: EventsCore, database: DatabaseService):
+    def __init__(self,
+                 renderer: Renderer,
+                 events: EventsCore,
+                 database: DatabaseService,
+                 language_service: LanguageService):
         self._renderer = renderer
         self._highscores = HighScoreRepository(database)
         self._long_lived_elements = {}
         self._events_handler = EventsHandlingService(events, renderer)
+        self._language_service = language_service
 
         background = WorldBackground(renderer)
         self._long_lived_elements["background"] = background
@@ -50,7 +56,7 @@ class CoreLoop:
             high_scores = self._highscores.get_single_highscores(game_initialization.level)
 
             if len(high_scores) > 0:
-                text += " Current best times:"
+                text += f" {self._language_service.get_text('current_best_times')}:"
 
             for score in high_scores:
                 text += f"  {self._get_formatted_play_time(score.time)} by {score.initials}"
@@ -58,10 +64,12 @@ class CoreLoop:
             high_scores = self._highscores.get_challenge_highscores()
 
             if len(high_scores) > 0:
-                text += " Current high scores:"
+                text += f" {self._language_service.get_text('current_high_scores')}:"
 
             for score in high_scores:
-                text += f" {score.score} points by {score.initials}"
+                txt = self._language_service.get_text("points_by",
+                                                      [score.score,score.initials])
+                text += f" {txt}"
 
         return text
 
@@ -71,10 +79,10 @@ class CoreLoop:
         game_over_text = ""
 
         if game_state == BoardState.WON:
-            game_over_text = "Congratulations, you won the game!" +\
+            game_over_text = self._language_service.get_text("game_won") +\
                 self._get_high_scores(game_initialization)
         else:
-            game_over_text = "Better luck next time!" +\
+            game_over_text = self._language_service.get_text("game_lost") +\
                 self._get_high_scores(game_initialization)
 
         overlay = TextOverlay(game_over_text, 14, Position(5,10), Color(255,255,255),
@@ -85,8 +93,7 @@ class CoreLoop:
 
     def _create_challenge_advance_overlay(self,
                                           progress: ChallengeGameProgress):
-        text = "Great, you cleared the level! "
-        text += "Next, try one larger - can you make it without hitting any planes?"
+        text = self._language_service.get_text("challenge_level_cleared")
 
         overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
                             Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
@@ -98,12 +105,12 @@ class CoreLoop:
 
     def _create_challenge_level_try_again_overlay(self,
                                                   progress: ChallengeGameProgress):
-        text = "Dang, you hit the plane! "
+        text = f"{self._language_service.get_text('challenge_try_again')} "
 
         if progress.score > 0:
-            text += "You lost one point of score, but keep trying to solve it!"
+            text += self._language_service.get_text("challenge_point_lost")
         else:
-            text += "Keep trying to solve it!"
+            text += self._language_service.get_text("challenge_keep_trying")
 
         overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
                             Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
@@ -115,8 +122,8 @@ class CoreLoop:
 
     def _create_challenge_downgrade_try_again_overlay(self,
                                                       progress: ChallengeGameProgress):
-        text = "Dang, you hit the plane! "
-        text += "Too many hits drops you to a previous level, but keep trying to solve it!"
+        text = f"{self._language_service.get_text('challenge_try_again')} "
+        text += self._language_service.get_text("challenge_level_downgrade")
 
         overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
                             Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
@@ -127,7 +134,7 @@ class CoreLoop:
         progress.message_shown_start = time.time()
 
     def _create_initials_overlay(self):
-        text = "Please enter your initials for high-score board: "
+        text = f"{self._language_service.get_text('enter_initials')}: "
 
         overlay = TextOverlay(text, 30,
                               Position(5, 15),
@@ -146,7 +153,7 @@ class CoreLoop:
 
         border =  Border(Color(0,0,0), 1)
 
-        text_single = "Click here to start new single game (Alt+S or Alt+1-6 for level)"
+        text_single = self._language_service.get_text("start_single_game")
 
         single_game_buttons = Button(text_single, 20,
                               Position(50, 10),
@@ -157,7 +164,7 @@ class CoreLoop:
                               EventData(EventType.NEW_SINGLE_GAME),
                               self._renderer)
 
-        text_challenge = "Click here to start new challenge game (Alt+C)"
+        text_challenge = self._language_service.get_text("start_challenge_game")
 
         challenge_game_button = Button(text_challenge, 20,
                               Position(100, 10),
@@ -211,7 +218,9 @@ class CoreLoop:
                            game: Gameboard = None,
                            progress: ChallengeGameProgress = None):
         if game is not None:
-            radar_text = f"Radar contacts: {game.get_radar_contacts()} / {game.get_total_planes()}"
+            radar_text = self._language_service.get_text("status_radar_contacts",
+                                                         [game.get_radar_contacts(),
+                                                          game.get_total_planes()])
             radar_status = StatusItem(radar_text, -5, True, self._renderer)
 
             rendered_objects.append(radar_status)
@@ -220,16 +229,18 @@ class CoreLoop:
 
             if progress is None:
                 elapsed = game.get_elapsed_play_time()
-                progress_text = f"Time: {self._get_formatted_play_time(elapsed)}"
+                progress_text = self._language_service.get_text("status_playtime",
+                                                    [self._get_formatted_play_time(elapsed)])
             else:
-                progress_text = f"Current score: {progress.score}"
+                progress_text = self._language_service.get_text("status_score",
+                                                                [progress.score])
 
             progress_status = StatusItem(progress_text, 5, False, self._renderer)
 
             rendered_objects.append(progress_status)
 
         if state != GameState.RUN_GAME:
-            new_game_text = " Press Alt+N or Alt+[1-6] to start a new game"
+            new_game_text = self._language_service.get_text("status_new_game")
             new_game_status = StatusItem(
                 new_game_text,
                 0,
@@ -450,9 +461,9 @@ class CoreLoop:
 
         if game_initialization is None:
             # initialize new simple game board
-            game = Gameboard(1)
-            game.create()
-        elif game_initialization.mode == GameMode.SINGLE_GAME:
+            game_initialization = GameInitialization(1)
+
+        if game_initialization.mode == GameMode.SINGLE_GAME:
             game = Gameboard(game_initialization.level)
             game.create()
         else:

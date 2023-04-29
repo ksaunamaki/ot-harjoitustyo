@@ -16,3 +16,8 @@
 
 - Alkuvalintaruutu toteutettu pelimoodin valitsemiksi
 - Challenge -pelin mekaniikan implementointi
+
+## Viikko 6
+
+- Kielen konfigurointi ja tietokannan nollaus lisätty parametrisoituna toiminteina
+- Toteutettu monikielisyystuki (englanti + suomi)

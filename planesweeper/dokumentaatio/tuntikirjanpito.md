@@ -15,4 +15,6 @@
 | 16.4. |  2h | Lisää testejä, luokkadiagrammi arkkitehtuuridokumenttiin |
 | 21.4. |  4h | Pelimoodin valintaruutu |
 | 24.4. |  5h | Challenge pelin toteutus, testien lisäys |
-| Yhteensä | 43h |           |
+| 28.4. |  2h | Komentorivikäsittely, konfiguraatiorepository, testien lisäys |
+| 29.4. |  3h | Tekstiresurssien eriytys omaan luokkaan, suomenkielisen käännöksen lisääminen |
+| Yhteensä | 48h |           |

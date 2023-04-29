@@ -1,9 +1,12 @@
 import unittest
+import os
+from primitives.asset import Asset
 from primitives.position import Position
 from primitives.size import Size
 from entities.board_piece import BoardPiece, BoardPieceType
 from entities.ui.board_grid_item import BoardGridItem
 from entities.board import Gameboard, GameboardConfiguration, BoardState
+from services.asset_service import AssetService
 
 
 class TestGameboard(unittest.TestCase):
@@ -392,7 +395,7 @@ class TestGameboard(unittest.TestCase):
 
             self.assertEqual(piece_size, Size(in_pixels, in_pixels))
 
-    def test_pieces_are_creted_in_correct_size(self):
+    def test_pieces_are_created_in_correct_size(self):
         for level in GameboardConfiguration.LEVELS.keys():
             board = Gameboard(level)
             board.create()
@@ -400,4 +403,63 @@ class TestGameboard(unittest.TestCase):
             in_pixels = board._get_piece_in_pixels()
 
             self.assertEqual(board._pieces[0]._size, in_pixels)
+    
+    def test_piece_returns_correct_asset(self):
+        path = AssetService.get_assets_path()
+
+        for level in [1,3,6]:
+            board = Gameboard(level)
+            board.create()
+
+            in_pixels = board._get_piece_in_pixels()
+
+            piece = BoardPiece(in_pixels, BoardPieceType.EMPTY, None, Position(0,0))
+            asset = piece.get_asset()
+            expected = os.path.join(path, f"unopened-{in_pixels}.png")
+
+            self.assertEqual(asset.path, expected)
+            self.assertTrue(os.path.exists(asset.path))
+
+            piece.mark()
+
+            asset = piece.get_asset()
+            expected = os.path.join(path, f"radar-{in_pixels}.png")
             
+            self.assertEqual(asset.path, expected)
+            self.assertTrue(os.path.exists(asset.path))
+
+            piece.unmark()
+            piece.open()
+
+            asset = piece.get_asset()
+
+            self.assertIsNone(asset)
+
+            for number in range(1, 9):
+                piece = BoardPiece(in_pixels, BoardPieceType.NUMBER, number, Position(0,0))
+                asset = piece.get_asset()
+                expected = os.path.join(path, f"unopened-{in_pixels}.png")
+
+                self.assertEqual(asset.path, expected)
+
+                piece.open()
+
+                asset = piece.get_asset()
+                expected = os.path.join(path, f"number_{number}-{in_pixels}.png")
+
+                self.assertEqual(asset.path, expected)
+                self.assertTrue(os.path.exists(asset.path))
+            
+            piece = BoardPiece(in_pixels, BoardPieceType.PLANE, None, Position(0,0))
+            asset = piece.get_asset()
+            expected = os.path.join(path, f"unopened-{in_pixels}.png")
+
+            self.assertEqual(asset.path, expected)
+
+            piece.open()
+
+            asset = piece.get_asset()
+            expected = os.path.join(path, f"plane-{in_pixels}.png")
+
+            self.assertEqual(asset.path, expected)
+            self.assertTrue(os.path.exists(asset.path))

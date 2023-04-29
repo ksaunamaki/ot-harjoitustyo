@@ -19,11 +19,14 @@ class PygameRenderer(Renderer):
         "lost": pygame.Color(220, 0, 0)
     }
 
-    def __init__(self):
+    def __init__(self,
+                 window_title: str = None):
         super().__init__()
 
         pygame.init()
-        pygame.display.set_caption(super().WINDOW_TITLE)
+
+        if window_title is not None:
+            pygame.display.set_caption()
 
         icon = AssetService.get_asset("icon")
 

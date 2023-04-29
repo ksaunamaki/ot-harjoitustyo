@@ -8,7 +8,6 @@ from primitives.text_object import TextObject
 
 
 class Renderer:
-    WINDOW_TITLE = "Planesweeper"
     WINDOW_WIDTH = 900
     WINDOW_HEIGHT = 485
 
@@ -122,3 +121,17 @@ class RenderedObject:
 class EventsCore:
     def get(self) -> EventData:
         return EventData(EventType.NONE, None, None)
+
+class LanguageResource:
+    _resources = {}
+
+    def get_text(self,
+                 text_id,
+                 format_params: list = None) -> str:
+        if text_id in self._resources:
+            if format_params is None:
+                return self._resources[text_id]
+
+            return self._resources[text_id].format(*format_params)
+
+        return f"{text_id}"
