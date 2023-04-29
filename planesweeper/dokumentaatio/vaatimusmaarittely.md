@@ -36,6 +36,6 @@ Lisäksi toteutetaan, mikäli jäljellä oleva toteutusaikataulu mahdollistaa:
   - Oma pelitilansa satunnaisesti arvottujen koneiden sijasta, haettujen konesijaintien joukosta arvotaan vaikeustasoon kuuluvan totaalikonemäärän mukainen määrä koneita ja jotka sijoitetaan pelialueen taustalla olevan maailmankartan mukaan oikeisiin geopositioihin
   - Tallennetaan välimuistiin paikalliseen tietokantaan jotta API:a ei tarvitse joka kerta uudestaan kysyä, vaan esim. tunnin välein päivitetään
 - Jatkokehitysmahdollisuutena käyttää lisäksi API-datan osalta koneen sijainnin lisäksi suuntavektoria ja nopeutta laskeakseen hakujen välillä koneen uusia positioita
-- Mahdollisuus valita teksteiksi suomen kieli
-  - Mahdollistaa muidenkin kielien lisäämisen myöhemmin jatkokehityksenä
+- Mahdollisuus valita teksteiksi suomen kieli **tehty**
+  - Mahdollistaa muidenkin kielien lisäämisen myöhemmin jatkokehityksenä **tehty**
 - Pelialueen aloituksen animaatiot
