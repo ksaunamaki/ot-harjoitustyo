@@ -3,6 +3,8 @@ from primitives.position import Position
 
 
 class EventType(Enum):
+    """Type of the event detected or requested.
+    """
     NONE = 0
     EXIT = 1
     RIGHT_CLICK = 2
@@ -19,6 +21,8 @@ class EventType(Enum):
     ALPHANUMERIC_KEY = 40
 
 class EventData:
+    """Event information.
+    """
     def __init__(self, event: EventType,
                  position: Position = None,
                  data = None):

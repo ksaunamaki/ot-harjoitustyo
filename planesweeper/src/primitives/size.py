@@ -1,5 +1,19 @@
 class Size:
+    """Represents (width,height) size. 
+        Specific meaning of Size() depends on its usage context (for example, text's logical
+        size as length x 1 characters or pixel size area of object in game window).
+
+    Attributes:
+        width (int): Width.
+        height (int): Height.
+    """
     def __init__(self, width: int, height: int):
+        """Initialize size.
+
+        Args:
+            width (int): Width.
+            height (int): Height.
+        """
         self.width: int = width
         self.height: int = height
 

@@ -95,10 +95,13 @@ class PygameRenderer(Renderer):
 
         return self._screen.blit(rendered_text, (text_x, text_y))
 
-    def _render_line(self, line: tuple[Position, Position, tuple[int, int, int]]):
+    def _render_line(self, line: tuple[Position, Position, Color]):
         pygame.draw.line(self._screen,
-                            pygame.Color(220, 220, 220),
-                            (line[0].x, line[0].y),
+                            pygame.Color(
+                                line[2].rgb_r,
+                                line[2].rgb_g,
+                                line[2].rgb_b),
+                                (line[0].x, line[0].y),
                                 (line[1].x, line[1].y))
 
     def _render_border(self, position: Position,
@@ -231,9 +234,6 @@ class PygameRenderer(Renderer):
 
     def tick(self):
         self._clock.tick(self._fps)
-
-    def get_fps(self) -> int:
-        return self._fps
 
     def set_game_state(self):
         self._current_status_color = self._status_colors["game"]

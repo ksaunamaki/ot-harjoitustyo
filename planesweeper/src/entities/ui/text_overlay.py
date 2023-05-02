@@ -15,13 +15,31 @@ class TextOverlayScrollData:
         self.original_text: str = None
 
 class TextOverlay(TextBox):
-
+    """Represents an UI text overlay element containing text and logic for clipping/scrolling
+        the text inside the overlay.
+    """
     _SCROLL_SPACING = 10
 
     def _get_clipping_size(self,
                            text: TextObject, 
                            length: int, available_size: Size, text_offset_x: int,
-                           renderer: Renderer):
+                           renderer: Renderer) -> Size:
+        """Calculates the portion of text that is visible without overflowing the containing
+            overlay element area. For this, concrete Renderer class implementation is required
+            for measuring the actual width of the text when rendered using selected font size.
+            Implementation works by recursively reducing the length of text string and
+            seeing if the string fits at that length.
+
+        Args:
+            text (TextObject): Text object to measure clipping for.
+            length (int): Length to test with.
+            available_size (Size): Overlay container's size.
+            text_offset_x (int): Relative X offset of the text inside the overlay.
+            renderer (Renderer): Renderer class to use to measure text with.
+
+        Returns:
+            Size: Size of the text that fits inside overlay, width in characters.
+        """
         text_to_show = text.get_text()[0:length]
 
         if renderer is None:
@@ -56,7 +74,19 @@ class TextOverlay(TextBox):
                  overlay_color: Color,
                  border: Border,
                  renderer: Renderer):
-        
+        """Initialize text overlay.
+
+        Args:
+            text_to_show (str): Textual content to show in overlay.
+            text_size (int): Font size for text to show.
+            text_offset (Position): Top-left corner relative positioning of text inside overlay.
+            text_color (Color): Color to show text in.
+            overlay_position (Position): Top-left corner positioning of overlay on container element.
+            overlay_size (Size): Size for the overlay object.
+            overlay_color (Color): Color to use for overlay background.
+            border (Border): Border style for overlay.
+            renderer (Renderer): Renderer implementation to use (required to calculate clipping correctly).
+        """
         text = TextObject(text_to_show, text_offset, text_size, text_color)
         super().__init__(text)
 
@@ -126,6 +156,9 @@ class TextOverlay(TextBox):
                     self._text._text = self._text._text[0:-2]
 
     def tick(self):
+        """Synchronization tick signal called from renderer. Without supplied tick, scrolling and 
+            input cursor blinking does not work correctly.
+        """
         if self._scroll_data.scroll:
             self._handle_scroll()
 
@@ -133,12 +166,20 @@ class TextOverlay(TextBox):
             self._handle_blinking()
 
     def enable_blink_on_end(self):
+        """Enable blinking cursor at the end of the text in overlay.
+        """
         self._blink_end = True
 
     def disable_blink_on_end(self):
+        """Disable blinking cursor at the end of the text in overlay"""
         self._blink_end = False
 
     def append_text(self, text: str):
+        """Append characters to the end of textual content held in overlay.
+
+        Args:
+            text (str): Text to append at the end.
+        """
         if not self._blink_end or not self._blink_state:
             self._text.append_text(text)
             return
@@ -150,6 +191,11 @@ class TextOverlay(TextBox):
         self._text._text += " _"
 
     def truncate_text(self, by_characters: int):
+        """Removes characters from the end of the textual content held in overlay.
+
+        Args:
+            by_characters (int): Number of characters to remove from end.
+        """
         if not self._blink_end or not self._blink_state:
             self._text.truncate_text(by_characters)
             return

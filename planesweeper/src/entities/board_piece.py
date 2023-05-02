@@ -12,6 +12,13 @@ class BoardPieceType(Enum):
     NUMBER = 2
 
 class BoardPiece(RenderedObject):
+    """Represents an UI object for gameboard's single piece/square.
+        Board piece can exist in unopened, marked or opened state and is
+        representation of one of game's various possible piece types:
+        - Plane
+        - Number
+        - Empty
+    """
     cached_assets = {}
 
     def __init__(self, piece_size: int, piece_type: BoardPieceType, data,

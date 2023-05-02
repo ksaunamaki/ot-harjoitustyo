@@ -5,8 +5,9 @@ import time
 from primitives.interfaces import RenderedObject
 from primitives.position import Position
 from primitives.size import Size
+from primitives.color import Color
 from entities.board_piece import BoardPiece, BoardPieceType
-from entities.ui.board_grid_item import BoardGridItem
+from entities.ui.board_grid_line import BoardGridLine
 
 
 class BoardPieceSize(Enum):
@@ -30,6 +31,8 @@ class BoardState:
     LOST = 2
 
 class GameboardConfiguration:
+    """Internal gameboard configuration object for keeping track of game's properties.
+    """
     LEVELS = {
         1: [(5, 5), 3],
         2: [(9, 9), 19],
@@ -62,6 +65,8 @@ class GameboardConfiguration:
         return self._planes
 
 class Gameboard:
+    """Main gameboard object implementing logic for single level of gameplay.
+    """
     def __init__(self, level: int):
         if level < 1 or level > 6:
             raise ValueError()
@@ -73,7 +78,7 @@ class Gameboard:
         self._offset: Position = Position(0,0)
         self._pieces: list[BoardPiece] = [None] *\
             (self._configuration.size.width * self._configuration.size.height)
-        self._grid_lines: list[BoardGridItem] = None
+        self._grid_lines: list[BoardGridLine] = None
 
         self._piece_size = BoardPieceSize.MEDIUM
 
@@ -221,16 +226,16 @@ class Gameboard:
         width = pixels * self._configuration.size.width
         height = pixels * self._configuration.size.height
 
-        color = (100, 100, 100)
+        color = Color(200, 200, 200)
 
         for y_pos in range(0, height+1, pixels):
-            self._grid_lines.append(BoardGridItem(
+            self._grid_lines.append(BoardGridLine(
                 Position(self._offset.x, self._offset.y + y_pos),
                 Position(self._offset.x + width, self._offset.y + y_pos),
                 color))
 
         for x_pos in range(0, width+1, pixels):
-            self._grid_lines.append(BoardGridItem(
+            self._grid_lines.append(BoardGridLine(
                 Position(self._offset.x + x_pos, self._offset.y),
                 Position(self._offset.x + x_pos, self._offset.y + height),
                 color))

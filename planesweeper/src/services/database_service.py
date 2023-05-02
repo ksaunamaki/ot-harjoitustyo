@@ -3,6 +3,8 @@ import sqlite3
 
 
 class DatabaseService:
+    """Handles low-level SQLite3 database routines for accessing game database.
+    """
 
     def _drop_existing_tables(self):
         try:
@@ -38,6 +40,15 @@ class DatabaseService:
         self._connection.row_factory = sqlite3.Row
 
     def __init__(self, create_as_new = False, database_path = None):
+        """Initialize database connection.
+
+        Args:
+            create_as_new (bool, optional): Create all tables anew regardless of if
+                they alredy exist in the database. Defaults to False.
+            database_path (_type_, optional): Fully-qualified path to the database file
+                to use. Defaults to None in which case database is created inside the same
+                directory as the game's root.
+        """
         if database_path is None:
             name = ".planesweeper.db"
             directory = os.path.dirname(__file__)
@@ -52,17 +63,29 @@ class DatabaseService:
         self._value_placeholders = {}
 
     def close(self):
+        """Flushes all pending data and closes the database file. To avoid any lost data
+            this method should always called at the end of program when there has been
+            any modifications against the database.
+        """
         if self._connection is not None:
             self._connection.close()
 
     def get_rows_from_table(self, table: str) -> list[sqlite3.Row]:
+        """Retrieve all currently existing rows in the specified table.
+
+        Args:
+            table (str): Table to get all rows from.
+
+        Returns:
+            list[sqlite3.Row]: Row data.
+        """
         data: list[sqlite3.Row] = []
 
         if not self._is_available:
             return data
 
         try:
-            results = self._connection.execute(f"select * from {table}")
+            results = self._connection.execute(f"SELECT * FROM {table}")
         except sqlite3.OperationalError:
             return data
 
@@ -76,6 +99,16 @@ class DatabaseService:
     def select_rows_from_table(self,
                                table: str,
                                column, value) -> list[sqlite3.Row]:
+        """Retrieve row(s) from specified table filtering based on single column value.
+
+        Args:
+            table (str): Table to get row(s) from.
+            column (_type_): Column to use to filter returned row(s) on.
+            value (_type_): Column value to use to filter returned row(s) on.
+
+        Returns:
+            list[sqlite3.Row]: Matching rows.
+        """
         data: list[sqlite3.Row] = []
 
         if not self._is_available:
@@ -83,7 +116,7 @@ class DatabaseService:
 
         try:
             results = self._connection.execute(
-                f"select * from {table} where {column} = ?",
+                f"SELECT * FROM {table} WHERE {column} = ?",
                 [value])
         except sqlite3.OperationalError:
             return data
@@ -119,12 +152,22 @@ class DatabaseService:
         return placeholders[0:-5]
 
     def store_row_to_table(self, table: str, data: list) -> bool:
+        """Store new row into specified table using supplied column values.
+
+        Args:
+            table (str): Table to store new row to.
+            data (list): Column values for new row, must match order of columns in table
+                specification!
+
+        Returns:
+            bool: True if row could be added, False otherwise.
+        """
         if not self._is_available:
             return False
 
         try:
             self._connection.execute(
-                f"insert into {table} values ({self._get_value_placeholders(data)})",
+                f"INSERT INTO {table} VALUES ({self._get_value_placeholders(data)})",
                 data)
             self._connection.commit()
         except sqlite3.OperationalError:
@@ -133,12 +176,23 @@ class DatabaseService:
         return True
 
     def remove_row_from_table(self, table: str, keys: list, values: list) -> bool:
+        """Remove existing row from specified table using supplied matching values.
+
+        Args:
+            table (str): Table to remove row from.
+            keys (list): Columns to match removed row on.
+            values (list): Column values to match removed row on.
+
+        Returns:
+            bool: True if operation was successful (regardless if such row 
+                actually existed or not), False otherwise.
+        """
         if not self._is_available:
             return False
 
         try:
             self._connection.execute(
-                f"delete from {table} where {self._get_key_value_placeholders(keys)}",
+                f"DELETE FROM {table} WHERE {self._get_key_value_placeholders(keys)}",
                 values)
             self._connection.commit()
         except sqlite3.OperationalError:

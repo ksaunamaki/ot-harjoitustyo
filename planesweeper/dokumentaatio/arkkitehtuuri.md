@@ -73,6 +73,8 @@ Syötteenkäsittely ja kaiken näkyvän sisällön muodostaminen ruudulle on abs
 
 Renderer -luokan toteuttava konkreettinen luokka ottaa jokaisella ruudunpäivityskierroksella [compose() -metodi] listan piirrettäviä objekteja jotka toteuttavat RenderedObject -rajapintaluokan, ja muodostaa niiden perusteella sovellusikkunan sisällön.
 
+Osa RenderedObject -luokasta periytyvistä rakentuvat toisten vastaavien luokkien jo toteuttaman toiminnallisuuden päälle, esim. Button -> TextOverlay -> TextBox (nappula, joka rakentuu TextOverlay luokassa toteutettuun laajempaan tekstinasetteluun joka taas rakentuu TextBoxin tekstin määrittelyn primitiiveihin).
+
 ## Peliobjektit
 
 Varsinaisen pelilogiikan sekä siihen liittyvien elementtien (ruudut, muut assetit) muodostamisen toteuttaa Gameboard -luokka, jota CoreLoop luokka ajaa osana tilakoneen pelitilaa.

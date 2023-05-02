@@ -4,7 +4,7 @@ from primitives.asset import Asset
 from primitives.position import Position
 from primitives.size import Size
 from entities.board_piece import BoardPiece, BoardPieceType
-from entities.ui.board_grid_item import BoardGridItem
+from entities.ui.board_grid_line import BoardGridLine
 from entities.board import Gameboard, GameboardConfiguration, BoardState
 from services.asset_service import AssetService
 
@@ -375,7 +375,7 @@ class TestGameboard(unittest.TestCase):
         for item in rendering_items:
             if isinstance(item, BoardPiece):
                 pieces += 1
-            if isinstance(item, BoardGridItem):
+            if isinstance(item, BoardGridLine):
                 grid_lines += 1
 
         # width x height pieces for board

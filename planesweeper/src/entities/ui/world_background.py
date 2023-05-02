@@ -6,17 +6,24 @@ from services.asset_service import AssetService
 
 
 class WorldBackground(RenderedObject):
+    """Represents an UI background object for the game window.
+    """
     WIDTH = 900
     HEIGHT = 450
 
     def __init__(self, renderer: Renderer = None):
         super().__init__(Position(0,0), -1000, renderer)
 
-        #if renderer is not None:
-        #    text = "New game: Alt+N, new game with level: Alt+[1-6]"
-        #    self._text = TextObject(text, Position(5, renderer.get_play_area_size().height-20))
-
     def position_board_on_world(self, board: Gameboard):
+        """Calculates relative positioning for the game board on the world background, based
+            on the board's logical size and positioning it initally over Europe and at larger sizes
+            to fit the game window reasonably.
+            Positioning is intended to prepare for the usage of real plane position data via API,
+            which statistically will mostly be over inhabited world areas.
+
+        Args:
+            board (Gameboard): Gameboard for which to calculate new positioning.
+        """
         dimensions = board.get_dimensions()
 
         # position on Europe, initially
@@ -33,6 +40,3 @@ class WorldBackground(RenderedObject):
 
     def get_asset(self):
         return AssetService.get_asset("world.png")
-
-    def get_dimensions(self) -> Size:
-        return Size(WorldBackground.WIDTH, WorldBackground.HEIGHT)

@@ -8,15 +8,28 @@ from entities.ui.button import Button
 
 
 class InputBuffer:
+    """Input buffer to use for holding keyboard input text before main loop can process
+        it.
+    """
     def __init__(self):
         self._buffer = ""
         self._updated = False
 
     def write(self, data: str):
+        """Add new input text to the buffer.
+
+        Args:
+            data (str): Text to add.
+        """
         self._buffer += data
         self._updated = True
 
     def read(self) -> str:
+        """Gets the buffered text and clears the buffer.
+
+        Returns:
+            str: Currently buffered text.
+        """
         self._updated = False
         buffer = self._buffer
         self._buffer = ""
@@ -25,6 +38,11 @@ class InputBuffer:
 
     @property
     def is_updated(self) -> bool:
+        """Signals if input buffer has been written to after last check or read.
+
+        Returns:
+            bool: True if new data is available since last check or read.
+        """
         updated = self._updated
         self._updated = False
 
@@ -46,10 +64,20 @@ class EventsHandlingResult:
         return self._new_event
 
 class EventsHandlingService:
+    """Handles UI events (mouse and keyboard) translation into game state changes.
+    """
 
     def __init__(self,
                  events: EventsCore = EventsCore(),
                  renderer: Renderer = Renderer()):
+        """Initialize service.
+
+        Args:
+            events (EventsCore, optional): EventCore derived class implementation that
+                supplies detected UI events for handling. Defaults to EventsCore().
+            renderer (Renderer, optional): Renderer derived class implementation that
+                can be used to calculate object positionings. Defaults to Renderer().
+        """
         self._events: EventsCore = events
         self._renderer: Renderer = renderer
 
@@ -238,6 +266,21 @@ class EventsHandlingService:
                        game: Gameboard,
                        ui_buttons: list[Button] = None,
                        input_buffer: InputBuffer = None) -> StateTransition:
+        """Processes UI events that are supplied by the EventCore class.
+
+        Args:
+            current_state (GameState): Current main game loop state for program.
+            game_initialization (GameInitialization): Currently running game's initialization
+                information, if applicable to current state.
+            game (Gameboard): Currently running game's gameboard, if applicable to current state.
+            ui_buttons (list[Button], optional): Visible UI buttons that need to be
+                tested for click events, if applicable to current state. Defaults to None.
+            input_buffer (InputBuffer, optional): Keyboard input buffer active for reading
+                input from user, if applicable to current state. Defaults to None.
+
+        Returns:
+            StateTransition: State transition required as response for UI events, or None.
+        """
         next_state: StateTransition = None
 
         while True:

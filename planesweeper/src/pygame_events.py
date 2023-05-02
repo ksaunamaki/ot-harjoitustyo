@@ -5,6 +5,8 @@ from primitives.position import Position
 
 
 class PygameEvents(EventsCore):
+    """Implements event translation from Pygame events into internal EventData objects. 
+    """
     def _get_kb(self, event: pygame.event.Event):
         modifiers = pygame.key.get_mods()
         is_alt = modifiers & pygame.KMOD_ALT
@@ -12,6 +14,7 @@ class PygameEvents(EventsCore):
         is_upcase = (modifiers & pygame.KMOD_CAPS) or\
                     (modifiers & pygame.KMOD_LSHIFT) or\
                     (modifiers & pygame.KMOD_RSHIFT)
+        is_enter = event.unicode == '\r'
 
         if event.key == pygame.K_s and is_alt:
             return EventData(EventType.NEW_SINGLE_GAME)
@@ -32,7 +35,7 @@ class PygameEvents(EventsCore):
         if event.key == pygame.K_6 and is_alt:
             return EventData(EventType.CHANGE_LEVEL_6)
 
-        if modifiers == pygame.KMOD_NONE or\
+        if (modifiers == pygame.KMOD_NONE and not is_enter) or\
                 is_upcase or\
                 is_numlock:
             return EventData(EventType.ALPHANUMERIC_KEY, None, event.unicode)
