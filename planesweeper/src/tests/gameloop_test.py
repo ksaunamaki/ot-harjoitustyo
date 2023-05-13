@@ -6,11 +6,16 @@ from primitives.state_transition import StateTransition
 from entities.board import Gameboard, GameboardConfiguration
 from services.database_service import DatabaseService
 from services.language_service import LanguageService
+from repositories.highscore_repository import HighScoreRepository
 
 
 class TestCoreLoop(unittest.TestCase):
     def setUp(self):
-        self._core_loop = CoreLoop(Renderer(), EventsCore(), DatabaseService(), LanguageService())
+        db = DatabaseService()
+        self._core_loop = CoreLoop(HighScoreRepository(db),
+                                   Renderer(),
+                                   EventsCore(),
+                                   LanguageService())
 
     def test_single_game_initialization_state_transition_without_data(self):
         core_loop = self._core_loop
@@ -291,3 +296,14 @@ class TestCoreLoop(unittest.TestCase):
         self.assertEqual(returned_values[1], game_initialization)
         self.assertEqual(returned_values[2], game)
         self.assertEqual(returned_values[3], progress)
+    
+    def test_end_game_overlays_are_created(self):
+        core_loop = self._core_loop
+        game_initialization: GameInitialization = GameInitialization(1, GameMode.SINGLE_GAME)
+        game: Gameboard = Gameboard(1)
+
+        _ = core_loop._render_overlays(GameState.GAME_OVER, game_initialization, game, None)
+        self.assertTrue("game_over_overlay" in core_loop._long_lived_elements)
+
+        _ = core_loop._render_overlays(GameState.GET_INITIALS, game_initialization, game, None)
+        self.assertTrue("initials_overlay" in core_loop._long_lived_elements)

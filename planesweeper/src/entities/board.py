@@ -150,6 +150,11 @@ class Gameboard:
                 self._offset.y + position.y * pixels)
 
     def change_position(self, draw_at: Position):
+        """Changes this board's relative position on the container UI element.
+
+        Args:
+            draw_at (Position): New top-left position from which to draw board and its elements
+        """
         self._offset = draw_at
 
         for index, piece in enumerate(self._pieces):
@@ -161,6 +166,16 @@ class Gameboard:
 
     def translate_event_position_to_piece_position(self,
             event_position: Position) -> Position:
+        """Converts event's (e.g. mouse click) pixel position into game board
+            piece's X,Y coordinate.
+
+        Args:
+            event_position (Position): Pixel position of the event
+
+        Returns:
+            Position: X,Y coordinate representing game piece on board or None if
+                event position is outside the board's pieces
+        """
         event_x = event_position.x - self._offset.x
         event_y = event_position.y - self._offset.y
 
@@ -181,8 +196,14 @@ class Gameboard:
 
         return Position(x_pos, y_pos)
 
-    def create(self, randomize_planes: bool = True):
-        # Initialize new game board
+    def create(self):
+        """Creates or re-creates new game board content according to initialization data 
+            passed in constructor.
+
+            This method MUST be called before board can be played.
+        """
+
+        # Create plane pieces
         plane_indexes = []
         self._pieces: list[BoardPiece] = [None] *\
             (self._configuration.size.width * self._configuration.size.height)
@@ -190,8 +211,7 @@ class Gameboard:
 
         total_pieces = len(self._pieces)
 
-        if randomize_planes:
-            plane_indexes = random.sample(range(0, total_pieces), self._configuration.planes)
+        plane_indexes = random.sample(range(0, total_pieces), self._configuration.planes)
 
         for index in plane_indexes:
             position = self._get_position_from_index(index)
@@ -199,7 +219,7 @@ class Gameboard:
                 piece_in_pixels, BoardPieceType.PLANE, None,
                 self._calculate_drawing_position(position))
 
-        # Initialize rest
+        # Create other pieces
         for i in range(0, total_pieces):
             if self._pieces[i] is not None:
                 continue
@@ -241,9 +261,20 @@ class Gameboard:
                 color))
 
     def get_level(self) -> int:
+        """Get current play level
+
+        Returns:
+            int: Current level
+        """
         return self._configuration.level
 
     def get_rendering_items(self) -> list[RenderedObject]:
+        """Gets all UI items consisting of the game board's current state
+            (pieces and underlying grid).
+
+        Returns:
+            list[RenderedObject]: UI items
+        """
         items: list(RenderedObject) = []
 
         if self._grid_lines is None:
@@ -258,9 +289,19 @@ class Gameboard:
         return items
 
     def get_total_planes(self) -> int:
+        """Get total number of planes in the current game.
+
+        Returns:
+            int: Number of planes
+        """
         return self._configuration.planes
 
     def get_radar_contacts(self) -> int:
+        """Get total number currently marked pieces a.k.a. radar contacts.
+
+        Returns:
+            int: Number of radar contacts
+        """
         marked = 0
 
         for piece in self._pieces:
@@ -269,14 +310,29 @@ class Gameboard:
         return marked
 
     def get_pieces_on_board(self) -> int:
+        """Get total number of pieces on the gameboard (X x Y).
+
+        Returns:
+            int: Number of pieces on board.
+        """
         return self._configuration.size.height *\
                 self._configuration.size.width
 
     def get_dimensions(self) -> Size:
+        """Get gameboard's current size.
+
+        Returns:
+            Size: Current size in pixels
+        """
         return Size(self._configuration.size.width * self._get_piece_in_pixels(),
                 self._configuration.size.height * self._get_piece_in_pixels())
 
     def get_piece_dimensions(self) -> Size:
+        """Get gameboard's pieces current size.
+
+        Returns:
+            Size: Individual piece's size in pixels
+        """
         pixels = self._get_piece_in_pixels()
 
         return Size(pixels, pixels)
@@ -383,6 +439,14 @@ class Gameboard:
             self._stop_time = time.time()
 
     def open_piece(self, position: Position):
+        """Perform open operation on piece at specific coordinates.
+
+        Args:
+            position (Position): Coordinates of the piece.
+                Please note that this is relative coordinate of the piece, not 
+                pixel coordinates i.e. 0,0 refers to piece at the top-left corner 
+                of the board and 9,9 refers to bottom-right piece, assuming 9x9 board.
+        """
         if self._state in (BoardState.WON, BoardState.LOST):
             return
 
@@ -395,6 +459,14 @@ class Gameboard:
         self._open_piece(piece, position)
 
     def mark_piece(self, position: Position):
+        """Perform mark operation on piece at specific coordinates.
+
+        Args:
+            position (Position): Coordinates of the piece.
+                Please note that this is relative coordinate of the piece, not 
+                pixel coordinates i.e. 0,0 refers to piece at the top-left corner 
+                of the board and 9,9 refers to bottom-right piece, assuming 9x9 board.
+        """
         if self._state in (BoardState.WON, BoardState.LOST):
             return
 
@@ -421,9 +493,19 @@ class Gameboard:
         self._check_for_win()
 
     def get_current_board_state(self) -> BoardState:
+        """Get current play state of the gameboard.
+
+        Returns:
+            BoardState: State of the play (game running, game is won, game is lost)
+        """
         return self._state
 
     def get_elapsed_play_time(self) -> float:
+        """Get currently elapsed play time since start of first move (open or mark).
+
+        Returns:
+            float: Play time in seconds.
+        """
         if self._start_time is None:
             return 0.0
 

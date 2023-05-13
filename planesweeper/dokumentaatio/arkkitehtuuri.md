@@ -6,9 +6,10 @@
   classDiagram
        main -- "1" CoreLoop
        CoreLoop -- "1" LanguageService
-       CoreLoop -- "1" EventsHandlingService
-       CoreLoop -- "1" ConfigurationRepository
+       CoreLoop -- "1" UiService
        CoreLoop -- "1" HighScoreRepository
+       CoreLoop -- "1" ConfigurationRepository
+       CoreLoop -- "1" EventsHandlingService
        LanguageService -- "*" LanguageResource
        EventsHandlingService -- "1" EventsCore
        EventsCore <-- PygameEvents
@@ -22,6 +23,44 @@
        Renderer ..> RenderedObject
        Renderer <-- PygameRenderer
 ```
+
+Sovelluksen ydinkoodi muodostuu CoreLoop -luokasta, joka ylläpitää sovelluksen tilaa ja suorittaa päätilasiirtymiä (kuvattu jäljempänä) eri toiminnallisten osioiden (alkutila, pelitila, high-score syöte jne.) välillä. CoreLoop:n ajaminen käynnistää sovelluksen toiminnan ja sieltä palaaminen päättää sen.
+
+### Hakemistorakenne
+
+Lähdekoodit on sijoitettu karkeasti jaotellen seuraavien alihakemistojen mukaisesti src/ -juurihakemiston lisäksi joka sisältää sekä käynnistystiedoston game.py että pääkoodin loop.py:
+
+**/src/assets**
+
+Käyttöliittymän kuvatiedostot.
+
+**/src/entities**
+
+Laajemmat luokka-objektit jotka toteuttavat jonkun tietyn toiminnallisen kokonaisuuden, kuten esimerkiksi pelilauta (board.py).
+
+**/src/entities/ui**
+
+Laajemmat luokka-objektit jotka liittyvät käyttöliittymän piirtämiseen, kuten esimerkiksi painonappula (button.py).
+
+**/src/primitives**
+
+Suppeammat luokka-objektit, enumeraatiot ja rajapinta-luokat joita käytetään useammassa paikassa muiden luokkien toimesta, kuten esimerkiksi X,Y -koordinaattia kuvaava Position (position.py).
+
+**/src/pygame**
+
+Pygame -kirjastoa käyttävät konkreettiset luokkatoteutukset (kts. "I/O käsittely" jäljempänä).
+
+**/src/repositories**
+
+Spesifejä datatyyppejä ylläpitävät luokat, kuten esimerkiksi high-score listat (highscore_repository.py).
+
+**/src/services**
+
+Yleiset palveluluokat perustason jaetun toiminnallisuuden toteuttamiseksi, kuten esimerkiksi SQLite tietokantakäsittely (database_service.py).
+
+**/src/tests**
+
+Yksikkötestiluokat.
 
 ## Sovelluksen päätilasiirtymät
 
@@ -91,3 +130,4 @@ Päärungon ulkopuolisina apupalveluina ovat:
 - AssetService -luokka, joka hoitaa kuva-assettien (taustakuva, pelilaudan kuvat) lataamisen levyltä kutsuvalle luokalle.
 - EventsHandlingService -luokka, joka prosessoi näppäimistö/hiiri -syötteitä ja tarvittaessa pelin tilan mukaisesti mutatoi pelitilaa tai ohjaa tilakoneen siirtymiä.
 - LanguageService -luokka, joka toteuttaa tekstiresurssien hakemisen valitun kielen mukaisesti. LanguageServices luokka lataa käännöstaulukot omina kieliluokkina src/services/languages -hakemistosta ja kieliluokat toteuttavat LanguageResource rajapintaluokan. Uuden kielen lisääminen onnistuu helposti lisäämällä kielikohtaisen kieliluokkatiedoston, ja lisäämällä LanguageService luokkaan ko. kielen nimen IMPORT_LANGUAGES taulukkoon. Huom! Ohjelma olettaa valittavan kielen tunnisteen, jolla se valitaan, olevan kielen kaksi ensimmäistä kirjainta (Finnish = fi jne.)
+- UIService -luokka, joka muodostaa CoreLoopin pyynnöstä käyttöliittymäelementtejä sen hetkisen tarpeen mukaan ja jotka kootaan käyttöliittymälle näytettäväksi Renderer toteutuksen kautta.

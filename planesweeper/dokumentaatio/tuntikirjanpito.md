@@ -18,4 +18,6 @@
 | 28.4. |  2h | Komentorivikäsittely, konfiguraatiorepository, testien lisäys |
 | 29.4. |  4h | Tekstiresurssien eriytys omaan luokkaan, suomenkielisen käännöksen lisääminen, käyttöohjeen luonti |
 | 2.5. |  2h | Docstring dokumentoinnin aloitus |
-| Yhteensä | 51h |           |
+| 4.5. |  3h | Dokumentointi ja refaktorointi |
+| 13.5. |  4h | Dokumentointi, testien lisäys ja refaktorointi |
+| Yhteensä | 58h |           |

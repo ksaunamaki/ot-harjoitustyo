@@ -3,6 +3,7 @@ from primitives.interfaces import Renderer, RenderedObject
 from primitives.position import Position
 from primitives.size import Size
 from services.asset_service import AssetService
+from primitives.text_object import TextObject
 
 
 class WorldBackground(RenderedObject):

@@ -17,14 +17,14 @@ class TestGameConfiguration(unittest.TestCase):
 
     def test_database_resets(self):
         config_repo = ConfigurationRepository(self._database_service)
-        config_repo.store_language("fi")
+        config_repo.store_languge("fi")
 
         self._database_service.close()
 
         self._database_service = DatabaseService(True, self._test_db_path)
         config_repo = ConfigurationRepository(self._database_service)
 
-        set_lang = config_repo.get_language()
+        set_lang = config_repo.get_languge()
 
         self.assertEqual(set_lang, config_repo._default_language)
 
@@ -34,8 +34,8 @@ class TestGameConfiguration(unittest.TestCase):
         languages = ["en", "fi"]
 
         for language in languages:
-            config_repo.store_language(language)
-            set_lang = config_repo.get_language()
+            config_repo.store_languge(language)
+            set_lang = config_repo.get_languge()
             self.assertEqual(set_lang, language)
     
     def test_cannot_set_unsupported_languages(self):
@@ -43,15 +43,15 @@ class TestGameConfiguration(unittest.TestCase):
 
         language = "kr"
 
-        config_repo.store_language(language)
-        set_lang = config_repo.get_language()
+        config_repo.store_languge(language)
+        set_lang = config_repo.get_languge()
 
         self.assertNotEqual(set_lang, language)
 
     def test_returns_default_language_if_not_set(self):
         config_repo = ConfigurationRepository(self._database_service)
 
-        set_lang = config_repo.get_language()
+        set_lang = config_repo.get_languge()
 
         self.assertEqual(set_lang, config_repo._default_language)
 
@@ -59,12 +59,12 @@ class TestGameConfiguration(unittest.TestCase):
         database = DatabaseService()
         config_repo = ConfigurationRepository(database)
 
-        set_lang = config_repo.get_language()
+        set_lang = config_repo.get_languge()
 
         language = "fi" if set_lang == "en" else "en"
 
         game.configure(['',f'--setlang={language}'], config_repo)
 
-        set_lang_new = config_repo.get_language()
+        set_lang_new = config_repo.get_languge()
 
         self.assertEqual(set_lang_new, language)

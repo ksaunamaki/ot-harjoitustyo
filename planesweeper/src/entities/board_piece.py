@@ -34,6 +34,12 @@ class BoardPiece(RenderedObject):
             self._number = data
 
     def get_asset(self) -> Asset:
+        """Get piece's asset image to render based on the current state and type of the 
+            piece (radar contact, plane, number, empty).
+
+        Returns:
+            Asset: Asset to render for piece
+        """
         pixel_size = self._size
         asset = None
 
@@ -59,18 +65,44 @@ class BoardPiece(RenderedObject):
         return None
 
     def get_dimensions(self) -> Size:
+        """Get piece's current size.
+
+        Returns:
+            Size: Size in pixels.
+        """
         return Size(self._size, self._size)
 
-    def is_marked(self):
+    def is_marked(self) -> bool:
+        """Has piece been marked as radar contact?
+
+        Returns:
+            bool: True if piece has been marked, False otherwise
+        """
         return self._marked
 
-    def is_open(self):
+    def is_open(self) -> bool:
+        """Has piece been opened?
+
+        Returns:
+            bool: True if piece has been opened, False otherwise
+        """
         return self._open
 
     def get_type(self) -> BoardPieceType:
+        """Get piece's type.
+
+        Returns:
+            BoardPieceType: Type (plane, number, empty)
+        """
         return self._type
 
-    def open(self):
+    def open(self) -> bool:
+        """Open the piece, can only be done for pieces that are closed and unmarked.
+
+        Returns:
+            bool: False if opened piece was plane, 
+                True otherwise or if piece was already open or marked
+        """
         if self._open or self._marked:
             return True
 
@@ -82,12 +114,17 @@ class BoardPiece(RenderedObject):
         return True
 
     def mark(self):
+        """Mark the piece, can only be done for pieces that are closed and unmarked.
+            Marking makes piece unopenable.
+        """
         if self._open or self._marked:
             return
 
         self._marked = True
 
     def unmark(self):
+        """Unmark the piece. Unmarking makes piece openable again.
+        """
         if self._open or not self._marked:
             return
 

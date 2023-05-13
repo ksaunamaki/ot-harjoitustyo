@@ -2,33 +2,27 @@ import time
 from primitives.interfaces import RenderedObject, Renderer, EventsCore
 from primitives.game import GameState, GameMode, GameInitialization, ChallengeGameProgress
 from primitives.state_transition import StateTransition
-from primitives.position import Position
-from primitives.size import Size
-from primitives.border import Border
-from primitives.color import Color
-from primitives.events import EventData, EventType
 from entities.board import Gameboard, BoardState, GameboardConfiguration
-from entities.ui.status_item import StatusItem
 from entities.ui.text_overlay import TextOverlay
-from entities.ui.button import Button
 from entities.ui.world_background import WorldBackground
 from repositories.highscore_repository import HighScoreRepository
 from services.events_handling_service import EventsHandlingService, InputBuffer
-from services.database_service import DatabaseService
 from services.language_service import LanguageService
+from services.ui_service import UiService
 
 
 class CoreLoop:
     def __init__(self,
+                 highscores: HighScoreRepository,
                  renderer: Renderer,
                  events: EventsCore,
-                 database: DatabaseService,
                  language_service: LanguageService):
+        self._highscores = highscores
         self._renderer = renderer
-        self._highscores = HighScoreRepository(database)
         self._long_lived_elements = {}
         self._events_handler = EventsHandlingService(events, renderer)
         self._language_service = language_service
+        self._ui_service = UiService(renderer, highscores, language_service)
 
         background = WorldBackground(renderer)
         self._long_lived_elements["background"] = background
@@ -36,152 +30,6 @@ class CoreLoop:
     def _render_long_lived_elements(self, rendered_objects: list[RenderedObject]):
         for element in self._long_lived_elements.values():
             rendered_objects.append(element)
-
-    def _render_game_ui(self, rendered_objects: list[RenderedObject],
-                        game: Gameboard):
-        # game pieces
-        for board_item in game.get_rendering_items():
-            rendered_objects.append(board_item)
-
-    def _get_formatted_play_time(self, total_time: float) -> str:
-        minutes = int(total_time // 60)
-        seconds = int(total_time % 60)
-
-        return f"{minutes:02d}:{seconds:02d}"
-
-    def _get_high_scores(self, game_initialization: GameInitialization) -> str:
-        text = ""
-
-        if game_initialization.mode == GameMode.SINGLE_GAME:
-            high_scores = self._highscores.get_single_highscores(game_initialization.level)
-
-            if len(high_scores) > 0:
-                text += f" {self._language_service.get_text('current_best_times')}:"
-
-            for score in high_scores:
-                text += f"  {self._get_formatted_play_time(score.time)} by {score.initials}"
-        else:
-            high_scores = self._highscores.get_challenge_highscores()
-
-            if len(high_scores) > 0:
-                text += f" {self._language_service.get_text('current_high_scores')}:"
-
-            for score in high_scores:
-                txt = self._language_service.get_text("points_by",
-                                                      [score.score,score.initials])
-                text += f" {txt}"
-
-        return text
-
-    def _create_game_over_overlay(self,
-                                  game_state: BoardState,
-                                  game_initialization: GameInitialization):
-        game_over_text = ""
-
-        if game_state == BoardState.WON:
-            game_over_text = self._language_service.get_text("game_won") +\
-                self._get_high_scores(game_initialization)
-        else:
-            game_over_text = self._language_service.get_text("game_lost") +\
-                self._get_high_scores(game_initialization)
-
-        overlay = TextOverlay(game_over_text, 14, Position(5,10), Color(255,255,255),
-                            Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(0,0,0), None, self._renderer)
-
-        self._long_lived_elements["game_over_overlay"] = overlay
-
-    def _create_challenge_advance_overlay(self,
-                                          progress: ChallengeGameProgress):
-        text = self._language_service.get_text("challenge_level_cleared")
-
-        overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
-                            Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(20,147,92, 0.7), None, self._renderer)
-
-        self._long_lived_elements["challenge_overlay"] = overlay
-
-        progress.message_shown_start = time.time()
-
-    def _create_challenge_level_try_again_overlay(self,
-                                                  progress: ChallengeGameProgress):
-        text = f"{self._language_service.get_text('challenge_try_again')} "
-
-        if progress.score > 0:
-            text += self._language_service.get_text("challenge_point_lost")
-        else:
-            text += self._language_service.get_text("challenge_keep_trying")
-
-        overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
-                            Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(207,65,3, 0.7), None, self._renderer)
-
-        self._long_lived_elements["challenge_overlay"] = overlay
-
-        progress.message_shown_start = time.time()
-
-    def _create_challenge_downgrade_try_again_overlay(self,
-                                                      progress: ChallengeGameProgress):
-        text = f"{self._language_service.get_text('challenge_try_again')} "
-        text += self._language_service.get_text("challenge_level_downgrade")
-
-        overlay = TextOverlay(text, 14, Position(10,10), Color(255,255,255),
-                            Position(0,15), Size(self._renderer.WINDOW_WIDTH, 35),
-                            Color(207,65,3, 0.7), None, self._renderer)
-
-        self._long_lived_elements["challenge_overlay"] = overlay
-
-        progress.message_shown_start = time.time()
-
-    def _create_initials_overlay(self):
-        text = f"{self._language_service.get_text('enter_initials')}: "
-
-        overlay = TextOverlay(text, 30,
-                              Position(5, 15),
-                              Color(255,255,255),
-                              Position(20,self._renderer.get_play_area_size().height // 2 - 30),
-                              Size(self._renderer.WINDOW_WIDTH - 40, 60),
-                              Color(19,146,119,0.5), None, self._renderer)
-        overlay.enable_blink_on_end()
-
-        self._long_lived_elements["initials_overlay"] = overlay
-
-    def _create_game_selection_buttons(self) -> dict:
-        buttons = {}
-
-        pos_y = self._renderer.get_play_area_size().height // 8
-
-        border =  Border(Color(0,0,0), 1)
-
-        text_single = self._language_service.get_text("start_single_game")
-
-        single_game_buttons = Button(text_single, 20,
-                              Position(50, 10),
-                              Color(0,0,0),
-                              Position(100, pos_y * 3),
-                              Size(self._renderer.WINDOW_WIDTH - 200, 40),
-                              Color(255,255,255,0.95), border,
-                              EventData(EventType.NEW_SINGLE_GAME),
-                              self._renderer)
-
-        text_challenge = self._language_service.get_text("start_challenge_game")
-
-        challenge_game_button = Button(text_challenge, 20,
-                              Position(100, 10),
-                              Color(0,0,0),
-                              Position(100, pos_y * 4),
-                              Size(self._renderer.WINDOW_WIDTH - 200, 40),
-                              Color(255,255,255,0.95), border,
-                              EventData(EventType.NEW_CHALLENGE_GAME),
-                              self._renderer)
-
-        buttons["single_game_button"] = single_game_buttons
-        buttons["challenge_game_button"] = challenge_game_button
-
-        for key, overlay in buttons.items():
-            self._long_lived_elements[key] = overlay
-
-        return buttons
 
     def _render_overlays(self,
                          state: GameState,
@@ -192,17 +40,19 @@ class CoreLoop:
 
         if state == GameState.GAME_OVER:
             if "game_over_overlay" not in self._long_lived_elements:
-                self._create_game_over_overlay(game_state, game_initialization)
-            else:
-                overlay = self._long_lived_elements["game_over_overlay"]
-                overlay.tick()
+                self._long_lived_elements["game_over_overlay"] = \
+                    self._ui_service.create_game_over_overlay(game_state, game_initialization)
+
+            overlay = self._long_lived_elements["game_over_overlay"]
+            overlay.tick()
 
         if state == GameState.GET_INITIALS:
             if "initials_overlay" not in self._long_lived_elements:
-                self._create_initials_overlay()
-            else:
-                overlay = self._long_lived_elements["initials_overlay"]
-                overlay.tick()
+                self._long_lived_elements["initials_overlay"] = \
+                    self._ui_service.create_initials_overlay()
+
+            overlay = self._long_lived_elements["initials_overlay"]
+            overlay.tick()
 
         if progress is not None:
             if "challenge_overlay" in self._long_lived_elements:
@@ -213,56 +63,15 @@ class CoreLoop:
                     # remove overlay after timeout to avoid obscuring play area
                     self._long_lived_elements.pop("challenge_overlay", None)
 
-    def _render_status_bar(self, rendered_objects: list[RenderedObject],
-                           state: GameState,
-                           game: Gameboard = None,
-                           progress: ChallengeGameProgress = None):
-        if game is not None:
-            radar_text = self._language_service.get_text("status_radar_contacts",
-                                                         [game.get_radar_contacts(),
-                                                          game.get_total_planes()])
-            radar_status = StatusItem(radar_text, -5, True, self._renderer)
-
-            rendered_objects.append(radar_status)
-
-            progress_text = ""
-
-            if progress is None:
-                elapsed = game.get_elapsed_play_time()
-                progress_text = self._language_service.get_text("status_playtime",
-                                                    [self._get_formatted_play_time(elapsed)])
-            else:
-                progress_text = self._language_service.get_text("status_score",
-                                                                [progress.score])
-
-            progress_status = StatusItem(progress_text, 5, False, self._renderer)
-
-            rendered_objects.append(progress_status)
-
-        if state != GameState.RUN_GAME:
-            new_game_text = self._language_service.get_text("status_new_game")
-            new_game_status = StatusItem(
-                new_game_text,
-                0,
-                True,
-                self._renderer)
-
-            # reposition to middle based on actual text size
-            text_object = new_game_status.get_text()
-            new_position = Position(
-                self._renderer.get_status_area_size().width // 2 -\
-                    (self._renderer.measure_text_dimensions(text_object).width // 2),
-                new_game_status.get_position().y)
-            new_game_status.change_position(new_position)
-
-            rendered_objects.append(new_game_status)
-
     def _run_initial(self) -> StateTransition:
 
         transition: StateTransition = None
         state = GameState.INITIAL
 
-        overlays = self._create_game_selection_buttons()
+        buttons = self._ui_service.create_game_selection_buttons()
+
+        for key, overlay in buttons.items():
+            self._long_lived_elements[key] = overlay
 
         while True:
             # events
@@ -270,7 +79,7 @@ class CoreLoop:
                 state,
                 None,
                 None,
-                overlays.values())
+                buttons.values())
 
             if transition is not None:
                 break
@@ -283,7 +92,7 @@ class CoreLoop:
             self._renderer.tick()
 
         # remove buttons
-        for key, _ in overlays.items():
+        for key, _ in buttons.items():
             self._long_lived_elements.pop(key, None)
 
         return transition
@@ -346,8 +155,8 @@ class CoreLoop:
             rendered_objects: list[RenderedObject] = []
 
             self._render_long_lived_elements(rendered_objects)
-            self._render_game_ui(rendered_objects, game)
-            self._render_status_bar(rendered_objects, state, game, progress)
+            self._ui_service.render_gameboard(rendered_objects, game)
+            self._ui_service.render_status_bar(rendered_objects, state, game, progress)
             self._render_overlays(state, game_initialization, game, progress)
 
             self._renderer.compose(rendered_objects)
@@ -441,8 +250,8 @@ class CoreLoop:
             rendered_objects: list[RenderedObject] = []
 
             self._render_long_lived_elements(rendered_objects)
-            self._render_game_ui(rendered_objects, game)
-            self._render_status_bar(rendered_objects, state, game)
+            self._ui_service.render_gameboard(rendered_objects, game)
+            self._ui_service.render_status_bar(rendered_objects, state, game)
             self._render_overlays(state, game_initialization, game)
 
             self._renderer.compose(rendered_objects)
@@ -513,7 +322,8 @@ class CoreLoop:
             if progress.current_level >= GameboardConfiguration.get_max_level()+1:
                 return self._challenge_game_over(progress)
 
-            self._create_challenge_advance_overlay(progress)
+            self._long_lived_elements["challenge_overlay"] = \
+                self._ui_service.create_challenge_advance_overlay()
         else:
             progress.level_failures += 1
             progress.score = max(0, progress.score - 1)
@@ -525,9 +335,13 @@ class CoreLoop:
                 progress.current_level = progress.current_level - 1
                 progress.level_failures = 0
 
-                self._create_challenge_downgrade_try_again_overlay(progress)
+                self._long_lived_elements["challenge_overlay"] = \
+                    self._ui_service.create_challenge_downgrade_try_again_overlay()
             else:
-                self._create_challenge_level_try_again_overlay(progress)
+                self._long_lived_elements["challenge_overlay"] = \
+                    self._ui_service.create_challenge_level_try_again_overlay(progress.score)
+
+        progress.message_shown_start = time.time()
 
         # initialize new game round
         return StateTransition(GameState.INITIALIZE_NEW_GAME,

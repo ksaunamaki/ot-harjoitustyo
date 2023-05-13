@@ -9,6 +9,8 @@ from services.asset_service import AssetService
 
 
 class PygameRenderer(Renderer):
+    """Implements Renderer interface class using Pygame library. 
+    """
     _loaded_images = {}
     _fonts = {}
     _text_measurement_cache = {}

@@ -8,26 +8,31 @@ class DatabaseService:
 
     def _drop_existing_tables(self):
         try:
-            self._connection.execute("drop table if exists single_highscores;")
-            self._connection.execute("drop table if exists challenge_highscores;")
-            self._connection.execute("drop table if exists configuration;")
+            self._connection.execute("DROP TABLE IF EXISTS single_highscores;")
+            self._connection.execute("DROP TABLE IF EXISTS challenge_highscores;")
+            self._connection.execute("DROP TABLE IF EXISTS configuration;")
+            self._connection.execute("DROP TABLE IF EXISTS api_state;")
         except sqlite3.OperationalError:
             self._is_available = False
 
     def _initialize_tables(self):
         try:
             self._connection.execute(
-                "create table if not exists single_highscores(level, time, initials);")
+                "CREATE TABLE IF NOT EXISTS single_highscores(level, time, initials);")
             self._connection.execute(
-                "create table if not exists challenge_highscores(score, initials);")
+                "CREATE TABLE IF NOT EXISTS challenge_highscores(score, initials);")
             self._connection.execute(
-                "create table if not exists configuration(key, value);")
+                "CREATE TABLE IF NOT EXISTS configuration(key, value);")
+            self._connection.execute(
+                "CREATE TABLE IF NOT EXISTS api_state(key, value);")
         except sqlite3.OperationalError:
             self._is_available = False
 
     def _initialize_database(self, database_path: str, create_as_new: bool):
         try:
-            self._connection = sqlite3.connect(database_path)
+            # we MUST disable check for access from multiple threads as game's background
+            # operations may utilize the connection too
+            self._connection = sqlite3.connect(database_path, check_same_thread=False)
         except sqlite3.OperationalError:
             self._is_available = False
 
@@ -127,6 +132,26 @@ class DatabaseService:
             row = results.fetchone()
 
         return data
+
+    def select_row_from_table(self,
+                              table: str,
+                              column, value) -> sqlite3.Row:
+        """Retrieve single/first row from specified table filtering based on single column value.
+
+        Args:
+            table (str): Table to get row from.
+            column (_type_): Column to use to filter returned row on.
+            value (_type_): Column value to use to filter returned row on.
+
+        Returns:
+            sqlite3.Row: First row or None if nothing matches.
+        """
+        rows = self.select_rows_from_table(table, column, value)
+
+        if rows is None or len(rows) == 0:
+            return None
+
+        return rows[0]
 
     def _get_value_placeholders(self, data: list) -> str:
         elements = len(data)

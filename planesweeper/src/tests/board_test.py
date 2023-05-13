@@ -1,6 +1,5 @@
 import unittest
 import os
-from primitives.asset import Asset
 from primitives.position import Position
 from primitives.size import Size
 from entities.board_piece import BoardPiece, BoardPieceType

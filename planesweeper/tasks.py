@@ -9,7 +9,7 @@ def reset(ctx):
     ctx.run("python3 src/game.py reset", pty=True)
 
 @task
-def configure(ctx, setlang=''):
+def configure(ctx, setlang='', apikey=''):
     if setlang:
         ctx.run(f"python3 src/game.py --setlang={setlang}", pty=True)
     else:
