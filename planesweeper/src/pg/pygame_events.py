@@ -16,6 +16,11 @@ class PygameEvents(EventsCore):
                     (modifiers & pygame.KMOD_RSHIFT)
         is_enter = event.unicode == '\r'
 
+        if is_numlock:
+            # Clear out numlock is set as Linux VMs could
+            # reports this bogus status for modifiers
+            modifiers &= ~pygame.KMOD_NUM
+
         if event.key == pygame.K_s and is_alt:
             return EventData(EventType.NEW_SINGLE_GAME)
         if event.key == pygame.K_c and is_alt:
@@ -35,9 +40,7 @@ class PygameEvents(EventsCore):
         if event.key == pygame.K_6 and is_alt:
             return EventData(EventType.CHANGE_LEVEL_6)
 
-        if (modifiers == pygame.KMOD_NONE and not is_enter) or\
-                is_upcase or\
-                is_numlock:
+        if not is_enter or is_upcase:
             return EventData(EventType.ALPHANUMERIC_KEY, None, event.unicode)
 
         return None
