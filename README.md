@@ -23,7 +23,7 @@ Pelisovellus on toteutettu Python ohjelmointikielen 3.10 versiolla ja se edellyt
 
 ## Asennus / käyttöönotto
 
-Viimeisin vakaa versio lähdekoodista löytyy [Release / viikko 6](https://github.com/ksaunamaki/ot-harjoitustyo/releases/tag/viikko6) kohdan alta.
+Viimeisin vakaa versio lähdekoodista löytyy [Release / loppupalautus](https://github.com/ksaunamaki/ot-harjoitustyo/releases/tag/loppupalautus) kohdan alta.
 
 Kun repository on kloonattu haluamaasi hakemistoon, suorita pakettien asentaminen (tai päivittäminen ajantasalle) Poetry:a käyttäen seuraavalla komennolla **planesweeper -hakemistossa**:
 
@@ -43,6 +43,8 @@ Vaihtoehtoisesti voit siirtyä terminaalista Poetryn kontekstiin ja käynnistä�
 poetry shell
 python3 src/game.py
 ```
+
+Lisää komentoja löytyy [käyttöohjeesta](https://github.com/ksaunamaki/ot-harjoitustyo/blob/master/planesweeper/dokumentaatio/kayttoohje.md).
 
 ## Testaaminen
 
